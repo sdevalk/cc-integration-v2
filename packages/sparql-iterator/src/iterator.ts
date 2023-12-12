@@ -67,6 +67,7 @@ export class Iterator extends EventEmitter {
       .replace('?_offset', offset.toString());
 
     const run = async () => this.fetcher.fetchBindings(this.endpointUrl, query);
+
     const bindingsStream = await pRetry(run, {
       retries: 3,
       onFailedAttempt: err => {
