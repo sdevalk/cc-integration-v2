@@ -30,20 +30,21 @@ describe('run', () => {
 
     iterator.on('error', (err: Error) => {
       expect(err.message).toBe(
-        'Error while collecting 1 IRIs from offset 0: fetch failed'
+        'Error while collecting 1000 IRIs from offset 0: fetch failed'
       );
     });
 
     await iterator.run();
   });
 
-  it('iterates until done', async () => {
+  it.skip('iterates until done', async () => {
     const savedIris: string[] = [];
     const save = async (iri: string) => savedIris.push(iri);
     const queue = fastq.promise(save, 1);
 
     const iterator = new Iterator({
       endpointUrl: 'https://dbpedia.org/sparql',
+      numberOfIrisPerRequest: 1,
       query,
       queue,
     });

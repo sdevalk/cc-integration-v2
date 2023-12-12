@@ -10,8 +10,8 @@ export const constructorOptionsSchema = z.object({
   endpointMethod: z.enum(['GET', 'POST']).default('POST'),
   waitBetweenRequests: z.number().min(0).default(0),
   timeoutPerRequest: z.number().min(0).default(60000),
+  numberOfIrisPerRequest: z.number().min(1).default(1000),
   query: z.string(),
-  numberOfIrisPerRequest: z.number().min(1).default(1),
   queue: z.any(),
 });
 
