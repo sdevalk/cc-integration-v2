@@ -29,6 +29,6 @@ export interface QueueTable {
 // You should not use the table schema interfaces directly. Instead, you should
 // use the `Selectable`, `Insertable` and `Updateable` wrappers. These wrappers
 // make sure that the correct types are used in each operation.
-export type QueueItem = Selectable<QueueTable>;
-export type NewQueueItem = Insertable<QueueTable>;
-export type QueueItemUpdate = Updateable<QueueTable>;
+export type Item = Selectable<QueueTable>;
+export type NewItem = Insertable<QueueTable>;
+export type ItemUpdate = Updateable<QueueTable>;

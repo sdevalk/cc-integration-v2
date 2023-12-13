@@ -1,4 +1,5 @@
 import {getLogger} from '@colonial-collections/common';
+import {Filestore} from '@colonial-collections/filestore';
 import {Queue} from '@colonial-collections/queue';
 import {Iterator} from '@colonial-collections/sparql-iterator';
 import fastq from 'fastq';
@@ -22,6 +23,7 @@ export async function run(options: RunOptions) {
 
   const startTime = performance.now();
   const logger = getLogger();
+  const filestore = new Filestore({dir: opts.resourceDir});
   const queue = new Queue({path: './db.sqlite'});
   await queue.init();
 
@@ -59,7 +61,21 @@ export async function run(options: RunOptions) {
 
   await iterator.run();
 
+  logger.info(`Deleting obsolete resources in directory "${opts.resourceDir}"`);
+
+  // Compare the queued IRIs with those previously stored on file,
+  // removing files that have become obsolete
+  const items = await queue.getPending();
+  const hashesOfCurrentIris = items.map(item =>
+    filestore.createHashFromIri(item.iri)
+  );
+
+  const matchFn = async (hashOfIri: string) =>
+    !hashesOfCurrentIris.includes(hashOfIri);
+
+  await filestore.deleteIfMatches(matchFn);
+
   const finishTime = performance.now();
   const runtime = finishTime - startTime;
-  logger.info(`Collected IRIs in ${PrettyMilliseconds(runtime)}`);
+  logger.info(`Done in ${PrettyMilliseconds(runtime)}`);
 }

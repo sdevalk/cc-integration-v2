@@ -1,4 +1,4 @@
-import {Database, NewQueueItem, QueueItemUpdate} from './types.js';
+import {Database, NewItem, ItemUpdate} from './types.js';
 import SQLite from 'better-sqlite3';
 import {FileMigrationProvider, Migrator, Kysely, SqliteDialect} from 'kysely';
 import fs from 'node:fs/promises';
@@ -55,7 +55,7 @@ export class Queue {
     }
   }
 
-  async push(item: NewQueueItem) {
+  async push(item: NewItem) {
     return this.db
       .insertInto('queue')
       .values(item)
@@ -63,7 +63,7 @@ export class Queue {
       .executeTakeFirstOrThrow();
   }
 
-  async update(id: number, updateWith: QueueItemUpdate) {
+  async update(id: number, updateWith: ItemUpdate) {
     return this.db
       .updateTable('queue')
       .set(updateWith)
@@ -79,13 +79,17 @@ export class Queue {
       .executeTakeFirst();
   }
 
-  async getPending(limit: number) {
-    return this.db
+  async getPending(limit?: number) {
+    const query = this.db
       .selectFrom('queue')
       .where('status', '=', 'pending')
-      .selectAll()
-      .limit(limit)
-      .execute();
+      .selectAll();
+
+    if (limit !== undefined) {
+      query.limit(limit);
+    }
+
+    return query.execute();
   }
 
   async isEmpty() {
