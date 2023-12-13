@@ -37,7 +37,7 @@ describe('run', () => {
     await iterator.run();
   });
 
-  it.skip('iterates until done', async () => {
+  it('iterates until done', async () => {
     const savedIris: string[] = [];
     const save = async (iri: string) => savedIris.push(iri);
     const queue = fastq.promise(save, 1);

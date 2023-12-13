@@ -4,7 +4,7 @@ import {Kysely, SqliteDialect} from 'kysely';
 
 const dialect = new SqliteDialect({
   database: async () => {
-    const db = new SQLite('db.sqlite');
+    const db = new SQLite('db.sqlite'); // TBD: make path configurable?
     db.pragma('journal_mode = WAL');
     return db;
   },
