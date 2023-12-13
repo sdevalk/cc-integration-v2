@@ -1,36 +1,100 @@
-import {db} from './database.js';
-import {migrateToLatest} from './migrator.js';
-import {NewQueueItem, QueueItemUpdate} from './types.js';
+import {Database, NewQueueItem, QueueItemUpdate} from './types.js';
+import SQLite from 'better-sqlite3';
+import {FileMigrationProvider, Migrator, Kysely, SqliteDialect} from 'kysely';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {URL, fileURLToPath} from 'node:url';
+import {z} from 'zod';
 
-export async function initQueue() {
-  await migrateToLatest();
-}
+export const constructorOptionsSchema = z.object({
+  path: z.string(),
+});
 
-export async function createItem(item: NewQueueItem) {
-  return db
-    .insertInto('queue')
-    .values(item)
-    .returningAll()
-    .executeTakeFirstOrThrow();
-}
+export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;
 
-export async function updateItem(id: number, updateWith: QueueItemUpdate) {
-  return db.updateTable('queue').set(updateWith).where('id', '=', id).execute();
-}
+export class Queue {
+  private db: Kysely<Database>;
 
-export async function deleteItem(id: number) {
-  return db
-    .deleteFrom('queue')
-    .where('id', '=', id)
-    .returningAll()
-    .executeTakeFirst();
-}
+  constructor(options: ConstructorOptions) {
+    const opts = constructorOptionsSchema.parse(options);
 
-export async function findPendingItems(limit: number) {
-  return db
-    .selectFrom('queue')
-    .where('status', '=', 'pending')
-    .selectAll()
-    .limit(limit)
-    .execute();
+    const dialect = new SqliteDialect({
+      database: async () => {
+        const db = new SQLite(opts.path);
+        db.pragma('journal_mode = WAL');
+        return db;
+      },
+    });
+
+    this.db = new Kysely<Database>({dialect});
+  }
+
+  async init() {
+    // Create the database if it doesn't exist and run the latest migrations
+    const dirname = fileURLToPath(new URL('.', import.meta.url));
+    const migrationFolder = path.join(dirname, 'migrations');
+    const provider = new FileMigrationProvider({
+      fs,
+      path,
+      migrationFolder,
+    });
+
+    const migrator = new Migrator({db: this.db, provider});
+    const {error, results} = await migrator.migrateToLatest();
+
+    results?.forEach(result => {
+      if (result.status === 'Error') {
+        console.error(`Failed to execute migration "${result.migrationName}"`);
+      }
+    });
+
+    if (error) {
+      console.error('Failed to migrate');
+      console.error(error);
+      throw error;
+    }
+  }
+
+  async push(item: NewQueueItem) {
+    return this.db
+      .insertInto('queue')
+      .values(item)
+      .returningAll()
+      .executeTakeFirstOrThrow();
+  }
+
+  async update(id: number, updateWith: QueueItemUpdate) {
+    return this.db
+      .updateTable('queue')
+      .set(updateWith)
+      .where('id', '=', id)
+      .execute();
+  }
+
+  async remove(id: number) {
+    return this.db
+      .deleteFrom('queue')
+      .where('id', '=', id)
+      .returningAll()
+      .executeTakeFirst();
+  }
+
+  async getPending(limit: number) {
+    return this.db
+      .selectFrom('queue')
+      .where('status', '=', 'pending')
+      .selectAll()
+      .limit(limit)
+      .execute();
+  }
+
+  async isEmpty() {
+    const record = await this.db
+      .selectFrom('queue')
+      .where('status', '=', 'pending')
+      .select(eb => eb.fn.count<number>('id').as('count'))
+      .executeTakeFirstOrThrow();
+
+    return record.count === 0;
+  }
 }

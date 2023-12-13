@@ -1,5 +1,5 @@
 import {getLogger} from '@colonial-collections/common';
-import {createItem, initQueue} from '@colonial-collections/queue';
+import {Queue} from '@colonial-collections/queue';
 import {Iterator} from '@colonial-collections/sparql-iterator';
 import fastq from 'fastq';
 import {readFile} from 'node:fs/promises';
@@ -22,13 +22,18 @@ export async function run(options: RunOptions) {
 
   const startTime = performance.now();
   const logger = getLogger();
+  const queue = new Queue({path: './db.sqlite'});
+  await queue.init();
+
+  const isEmpty = await queue.isEmpty();
+  if (!isEmpty) {
+    throw new Error('Cannot run: the queue is not empty');
+  }
 
   logger.info(`Collecting IRIs from SPARQL endpoint "${opts.endpointUrl}"`);
 
-  // TODO: check whether queue is empty. If it's not, bail out
-  await initQueue();
-  const save = async (iri: string) => createItem({iri, status: 'pending'});
-  const queue = fastq.promise(save, 1); // Concurrency
+  const save = async (iri: string) => queue.push({iri, status: 'pending'});
+  const iteratorQueue = fastq.promise(save, 1); // Concurrency
   const query = await readFile(opts.queryFile, 'utf-8');
 
   const iterator = new Iterator({
@@ -36,7 +41,7 @@ export async function run(options: RunOptions) {
     waitBetweenRequests: opts.waitBetweenRequests,
     numberOfIrisPerRequest: opts.numberOfIrisPerRequest,
     query,
-    queue,
+    queue: iteratorQueue,
   });
 
   iterator.on('warning', (err: Error) => logger.warn(err));
