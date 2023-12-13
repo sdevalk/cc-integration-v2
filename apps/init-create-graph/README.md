@@ -13,4 +13,5 @@
       --query-file ./fixtures/iterate.rq \
       --number-of-iris-per-request 2 \
       --wait-between-requests 100 \
-      --resource-dir ./tmp/dbpedia
+      --resource-dir ./tmp/dbpedia \
+      --queue-file ./tmp/queue.sqlite

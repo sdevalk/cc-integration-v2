@@ -14,6 +14,7 @@ const runOptionsSchema = z.object({
   waitBetweenRequests: z.number().optional(),
   numberOfIrisPerRequest: z.number().optional(),
   resourceDir: z.string(),
+  queueFile: z.string(),
 });
 
 export type RunOptions = z.infer<typeof runOptionsSchema>;
@@ -24,7 +25,7 @@ export async function run(options: RunOptions) {
   const startTime = performance.now();
   const logger = getLogger();
   const filestore = new Filestore({dir: opts.resourceDir});
-  const queue = new Queue({path: './db.sqlite'});
+  const queue = new Queue({path: opts.queueFile});
   await queue.init();
 
   const isEmpty = await queue.isEmpty();
@@ -73,7 +74,9 @@ export async function run(options: RunOptions) {
     !hashesOfCurrentIris.includes(hashOfIri);
 
   const deleteCount = await filestore.deleteIfMatches(matchFn);
-  logger.info(`Deleted ${deleteCount} resources in "${opts.resourceDir}"`);
+  logger.info(
+    `Deleted ${deleteCount} obsolete resources in "${opts.resourceDir}"`
+  );
 
   const finishTime = performance.now();
   const runtime = finishTime - startTime;

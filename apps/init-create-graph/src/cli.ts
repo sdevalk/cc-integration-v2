@@ -25,6 +25,7 @@ cli
     '--resource-dir <string>',
     'Directory for storing RDF resources of collected IRIs'
   )
+  .option('--queue-file <string>', 'File with the queue')
   .action(async (options: RunOptions) => {
     import('./runner.js').then(action => action.run(options));
   });
