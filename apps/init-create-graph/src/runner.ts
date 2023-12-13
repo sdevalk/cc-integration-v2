@@ -25,8 +25,7 @@ export async function run(options: RunOptions) {
   const startTime = performance.now();
   const logger = getLogger();
   const filestore = new Filestore({dir: opts.resourceDir});
-  const queue = new Queue({path: opts.queueFile});
-  await queue.init();
+  const queue = await Queue.new({path: opts.queueFile});
 
   const isEmpty = await queue.isEmpty();
   if (!isEmpty) {

@@ -9,11 +9,11 @@ import PrettyMilliseconds from 'pretty-ms';
 import {z} from 'zod';
 
 const runOptionsSchema = z.object({
-  numberOfConcurrentRequests: z.number().min(1).default(1),
-  waitBetweenRequests: z.number().optional(),
+  numberOfConcurrentRequests: z.number().min(1),
+  waitBetweenRequests: z.number(),
   resourceDir: z.string(),
   queueFile: z.string(),
-  batchSize: z.number().min(1).default(1000),
+  batchSize: z.number().min(1),
 });
 
 export type RunOptions = z.infer<typeof runOptionsSchema>;
@@ -23,20 +23,17 @@ export async function run(options: RunOptions) {
 
   const startTime = performance.now();
   const logger = getLogger();
-
-  const dereferencer = new Dereferencer();
-  dereferencer.on('warning', (err: Error) => logger.warn(err));
-
-  const filestore = new Filestore({dir: opts.resourceDir});
-
-  const queue = new Queue({path: opts.queueFile});
-  await queue.init();
+  const queue = await Queue.new({path: opts.queueFile});
 
   const isEmpty = await queue.isEmpty();
   if (isEmpty) {
     logger.info('Cannot run: the queue is empty');
     return;
   }
+
+  const filestore = new Filestore({dir: opts.resourceDir});
+  const dereferencer = new Dereferencer();
+  dereferencer.on('warning', (err: Error) => logger.warn(err));
 
   const save = async (item: Item) => {
     const quadStream = await dereferencer.run(item.iri);

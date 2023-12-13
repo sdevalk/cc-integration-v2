@@ -15,7 +15,7 @@ export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;
 export class Queue {
   private db: Kysely<Database>;
 
-  constructor(options: ConstructorOptions) {
+  private constructor(options: ConstructorOptions) {
     const opts = constructorOptionsSchema.parse(options);
 
     const dialect = new SqliteDialect({
@@ -29,7 +29,7 @@ export class Queue {
     this.db = new Kysely<Database>({dialect});
   }
 
-  async init() {
+  private async init() {
     // Create the database if it doesn't exist and run the latest migrations
     const dirname = fileURLToPath(new URL('.', import.meta.url));
     const migrationFolder = path.join(dirname, 'migrations');
@@ -53,6 +53,13 @@ export class Queue {
       console.error(error);
       throw error;
     }
+  }
+
+  static async new(options: ConstructorOptions) {
+    const queue = new Queue(options);
+    await queue.init();
+
+    return queue;
   }
 
   async push(item: NewItem) {
@@ -83,6 +90,7 @@ export class Queue {
     const query = this.db
       .selectFrom('queue')
       .where('status', '=', 'pending')
+      .orderBy('created_at asc') // FIFO
       .selectAll();
 
     if (limit !== undefined) {

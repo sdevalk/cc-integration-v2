@@ -8,6 +8,13 @@ const cli = cac();
 cli
   .command('run', 'Collect IRIs from a SPARQL endpoint')
   .option(
+    '--number-of-concurrent-requests [number]',
+    'Number of concurrent requests',
+    {
+      default: 1,
+    }
+  )
+  .option(
     '--wait-between-requests [number]',
     'Wait between requests, in milliseconds',
     {
