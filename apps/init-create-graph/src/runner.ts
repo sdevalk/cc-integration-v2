@@ -61,7 +61,7 @@ export async function run(options: RunOptions) {
 
   await iterator.run();
 
-  logger.info(`Deleting obsolete resources in directory "${opts.resourceDir}"`);
+  logger.info(`Deleting obsolete resources in "${opts.resourceDir}"`);
 
   // Compare the queued IRIs with those previously stored on file,
   // removing files that have become obsolete
@@ -69,11 +69,11 @@ export async function run(options: RunOptions) {
   const hashesOfCurrentIris = items.map(item =>
     filestore.createHashFromIri(item.iri)
   );
-
   const matchFn = async (hashOfIri: string) =>
     !hashesOfCurrentIris.includes(hashOfIri);
 
-  await filestore.deleteIfMatches(matchFn);
+  const deleteCount = await filestore.deleteIfMatches(matchFn);
+  logger.info(`Deleted ${deleteCount} resources in "${opts.resourceDir}"`);
 
   const finishTime = performance.now();
   const runtime = finishTime - startTime;

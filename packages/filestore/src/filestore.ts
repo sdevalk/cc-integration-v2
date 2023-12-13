@@ -3,8 +3,8 @@ import {globStream} from 'glob';
 import {createWriteStream} from 'node:fs';
 import {mkdir, unlink} from 'node:fs/promises';
 import {basename, dirname, join, resolve} from 'node:path';
-import {Stream} from '@rdfjs/types';
 import {pipeline} from 'node:stream/promises';
+import {Stream} from '@rdfjs/types';
 import rdfSerializer from 'rdf-serialize';
 import {z} from 'zod';
 
@@ -103,13 +103,17 @@ export class Filestore {
       }
     );
 
+    let deleteCount = 0;
     for await (const path of filesStream) {
       const hashOfIri = basename(path, Filestore.fileExtension);
       const isMatch = await matchFn(hashOfIri);
       if (isMatch) {
         await this.deleteByPath(path);
+        deleteCount++;
       }
     }
+
+    return deleteCount;
   }
 
   async save(options: SaveOptions) {

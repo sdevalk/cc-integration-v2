@@ -75,7 +75,9 @@ describe('deleteIfMatches', () => {
     const matchFn = async (hashOfIri: string) =>
       hashesOfIrisThatMustBeDeleted.includes(hashOfIri);
 
-    await store.deleteIfMatches(matchFn);
+    const deleteCount = await store.deleteIfMatches(matchFn);
+
+    expect(deleteCount).toBe(1);
 
     const path1 = store.createPathFromIri(iri1);
     expect(existsSync(path1)).toBe(false);
