@@ -16,7 +16,6 @@ export interface QueueTable {
   // made optional in inserts and updates.
   id: Generated<number>;
   iri: string;
-  status: 'pending' | 'processed';
   // You can specify a different type for each operation (select, insert and
   // update) using the `ColumnType<SelectType, InsertType, UpdateType>`
   // wrapper. Here we define a column `created_at` that is selected as

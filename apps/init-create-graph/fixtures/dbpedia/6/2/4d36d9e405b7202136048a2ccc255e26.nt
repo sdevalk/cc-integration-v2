@@ -1,0 +1,87 @@
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://www.w3.org/2000/01/rdf-schema#label> "Jack Dowding (footballer)"@en .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://www.w3.org/2000/01/rdf-schema#comment> "John McCallum Dowding (28 January 1881 – 11 May 1960) was an Australian rules footballer who played with St Kilda in the Victorian Football League (VFL). He also played for Prahran and Brighton in the Victorian Football Association (VFA)."@en .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://xmlns.com/foaf/0.1/name> "Jack Dowding"@en .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://xmlns.com/foaf/0.1/name> "John McCallum Dowding"@en .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://purl.org/dc/terms/subject> <http://dbpedia.org/resource/Category:Brighton_Football_Club_players> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://purl.org/dc/terms/subject> <http://dbpedia.org/resource/Category:1960_deaths> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://purl.org/dc/terms/subject> <http://dbpedia.org/resource/Category:Australian_rules_footballers_from_Victoria_(Australia)> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://purl.org/dc/terms/subject> <http://dbpedia.org/resource/Category:1881_births> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://purl.org/dc/terms/subject> <http://dbpedia.org/resource/Category:Australian_Rules_footballers:_place_kick_exponents> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://purl.org/dc/terms/subject> <http://dbpedia.org/resource/Category:St_Kilda_Football_Club_players> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://purl.org/dc/terms/subject> <http://dbpedia.org/resource/Category:Prahran_Football_Club_players> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/abstract> "John McCallum Dowding (28 January 1881 – 11 May 1960) was an Australian rules footballer who played with St Kilda in the Victorian Football League (VFL). He also played for Prahran and Brighton in the Victorian Football Association (VFA)."@en .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/wikiPageWikiLink> <http://dbpedia.org/resource/Victorian_Football_League> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/wikiPageWikiLink> <http://dbpedia.org/resource/Category:Brighton_Football_Club_players> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/wikiPageWikiLink> <http://dbpedia.org/resource/Category:1960_deaths> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/wikiPageWikiLink> <http://dbpedia.org/resource/Australian_Football_League> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/wikiPageWikiLink> <http://dbpedia.org/resource/Category:Australian_rules_footballers_from_Victoria_(Australia)> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/wikiPageWikiLink> <http://dbpedia.org/resource/Category:1881_births> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/wikiPageWikiLink> <http://dbpedia.org/resource/Category:Australian_Rules_footballers:_place_kick_exponents> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/wikiPageWikiLink> <http://dbpedia.org/resource/Prahran_Football_Club> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/wikiPageWikiLink> <http://dbpedia.org/resource/Elwood,_Victoria> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/wikiPageWikiLink> <http://dbpedia.org/resource/Brighton_Football_Club> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/wikiPageWikiLink> <http://dbpedia.org/resource/Category:St_Kilda_Football_Club_players> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/wikiPageWikiLink> <http://dbpedia.org/resource/St_Kilda_Football_Club> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/wikiPageWikiLink> <http://dbpedia.org/resource/Australian_rules_football> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/wikiPageWikiLink> <http://dbpedia.org/resource/Bendigo> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/wikiPageWikiLink> <http://dbpedia.org/resource/Category:Prahran_Football_Club_players> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/wikiPageUsesTemplate> <http://dbpedia.org/resource/Template:Short_description> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/wikiPageUsesTemplate> <http://dbpedia.org/resource/Template:Reflist> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/wikiPageUsesTemplate> <http://dbpedia.org/resource/Template:Use_dmy_dates> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/wikiPageUsesTemplate> <http://dbpedia.org/resource/Template:Use_Australian_English> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/wikiPageUsesTemplate> <http://dbpedia.org/resource/Template:Infobox_AFL_biography> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/wikiPageUsesTemplate> <http://dbpedia.org/resource/Template:AFL_Tables> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/wikiPageUsesTemplate> <http://dbpedia.org/resource/Template:AustralianFootball> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/wikiPageUsesTemplate> <http://dbpedia.org/resource/Template:0> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/wikiPageUsesTemplate> <http://dbpedia.org/resource/Template:Birth_date> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/wikiPageUsesTemplate> <http://dbpedia.org/resource/Template:Death_date_and_age> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/wikiPageUsesTemplate> <http://dbpedia.org/resource/Template:AFL-bio-1881-stub> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/wikiPageUsesTemplate> <http://dbpedia.org/resource/Template:AFL_StK> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/wikiPageRevisionID> "1084996565"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/wikiPageExternalLink> <http://www.thevfaproject.org/pages/Players/Dowding,_Jack.php> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/wikiPageLength> "2095"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/wikiPageID> "49055970"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/name> "Jack Dowding"@en .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://www.w3.org/2002/07/owl#sameAs> <http://www.wikidata.org/entity/Q22017977> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://www.w3.org/2002/07/owl#sameAs> <https://global.dbpedia.org/id/266GX> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://www.w3.org/ns/prov#wasDerivedFrom> <http://en.wikipedia.org/wiki/Jack_Dowding_(footballer)?oldid=1084996565&ns=0> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://xmlns.com/foaf/0.1/isPrimaryTopicOf> <http://en.wikipedia.org/wiki/Jack_Dowding_(footballer)> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/birthPlace> "Bendigo, Victoria"@en .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/birthDate> "1881-01-28"^^<http://www.w3.org/2001/XMLSchema#date> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/birthPlace> <http://dbpedia.org/resource/Bendigo> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/birthDate> "1881-01-28"^^<http://www.w3.org/2001/XMLSchema#date> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/careerStation> <http://dbpedia.org/resource/Jack_Dowding_(footballer)__CareerStation__1> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/careerStation> <http://dbpedia.org/resource/Jack_Dowding_(footballer)__CareerStation__2> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/careerStation> <http://dbpedia.org/resource/Jack_Dowding_(footballer)__CareerStation__3> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/careerStation> <http://dbpedia.org/resource/Jack_Dowding_(footballer)__CareerStation__4> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/fullname> "John McCallum Dowding"@en .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/years> "1899"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/years> "1903"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/years> "1906"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/years> "1912"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/position> "Follower/Forward"@en .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/club> <http://dbpedia.org/resource/Prahran_Football_Club> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/club> <http://dbpedia.org/resource/Brighton_Football_Club> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/gamesGoals> "42"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/gamesGoals> "46"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/gamesGoals> "68"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/gamesGoals> "77"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/statsend> "1919"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/deathPlace> <http://dbpedia.org/resource/Elwood,_Victoria> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/property/deathDate> "1960-05-11"^^<http://www.w3.org/2001/XMLSchema#date> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://dbpedia.org/ontology/deathDate> "1960-05-11"^^<http://www.w3.org/2001/XMLSchema#date> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#NaturalPerson> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.wikidata.org/entity/Q19088> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.wikidata.org/entity/Q215627> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.wikidata.org/entity/Q5> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.wikidata.org/entity/Q729> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.wikidata.org/entity/Q13414980> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Person> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Species> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Eukaryote> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Athlete> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Animal> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Person> .
+<http://dbpedia.org/resource/Jack_Dowding_(footballer)> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AustralianRulesFootballPlayer> .

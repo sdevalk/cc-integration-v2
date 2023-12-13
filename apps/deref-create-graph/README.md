@@ -9,7 +9,7 @@
 ##### Create a graph by dereferencing IRIs
 
     ./dist/cli.js run \
-      --number-of-concurrent-requests 1 \
+      --number-of-concurrent-requests 3 \
       --wait-between-requests 100 \
       --resource-dir ./tmp/dbpedia \
       --queue-file ./tmp/queue.sqlite \

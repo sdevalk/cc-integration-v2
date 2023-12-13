@@ -89,7 +89,6 @@ export class Queue {
   async getPending(limit?: number) {
     const query = this.db
       .selectFrom('queue')
-      .where('status', '=', 'pending')
       .orderBy('created_at asc') // FIFO
       .selectAll();
 
@@ -103,7 +102,6 @@ export class Queue {
   async isEmpty() {
     const record = await this.db
       .selectFrom('queue')
-      .where('status', '=', 'pending')
       .select(eb => eb.fn.count<number>('id').as('count'))
       .executeTakeFirstOrThrow();
 
