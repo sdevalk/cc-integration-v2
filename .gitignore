@@ -11,7 +11,7 @@ coverage
 .DS_Store
 *.pem
 tmp
-*.sqlite
+*.sqlite*
 
 # Debug
 npm-debug.log*

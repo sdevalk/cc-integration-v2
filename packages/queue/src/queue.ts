@@ -1,5 +1,10 @@
 import {db} from './database.js';
+import {migrateToLatest} from './migrator.js';
 import {NewQueueItem, QueueItemUpdate} from './types.js';
+
+export async function initQueue() {
+  await migrateToLatest();
+}
 
 export async function createItem(item: NewQueueItem) {
   return db

@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {URL, fileURLToPath} from 'node:url';
 
-async function migrateToLatest() {
+export async function migrateToLatest() {
   const dirname = fileURLToPath(new URL('.', import.meta.url));
   const migrationFolder = path.join(dirname, 'migrations');
   const provider = new FileMigrationProvider({
@@ -17,11 +17,7 @@ async function migrateToLatest() {
   const {error, results} = await migrator.migrateToLatest();
 
   results?.forEach(result => {
-    if (result.status === 'Success') {
-      console.log(
-        `Migration "${result.migrationName}" was executed successfully`
-      );
-    } else if (result.status === 'Error') {
+    if (result.status === 'Error') {
       console.error(`Failed to execute migration "${result.migrationName}"`);
     }
   });
@@ -32,7 +28,5 @@ async function migrateToLatest() {
     throw error;
   }
 
-  await db.destroy();
+  // await db.destroy();
 }
-
-migrateToLatest();
