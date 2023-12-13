@@ -6,9 +6,9 @@
 
 #### DBpedia
 
-##### Collect IRIs from a SPARQL endpoint
+##### Collect and queue IRIs from a SPARQL endpoint
 
-    ./dist/cli.js sparql-iterate \
+    ./dist/cli.js run \
       --endpoint-url "https://dbpedia.org/sparql" \
       --query-file ./fixtures/iterate.rq \
       --number-of-iris-per-request 2 \

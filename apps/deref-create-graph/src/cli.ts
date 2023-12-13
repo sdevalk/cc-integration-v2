@@ -6,9 +6,7 @@ import type {RunOptions} from './runner.js';
 const cli = cac();
 
 cli
-  .command('run', 'Collect and queue IRIs from a SPARQL endpoint')
-  .option('--endpoint-url <string>', 'SPARQL endpoint URL')
-  .option('--query-file <string>', 'File with a SPARQL query')
+  .command('run', 'Collect IRIs from a SPARQL endpoint')
   .option(
     '--wait-between-requests [number]',
     'Wait between requests, in milliseconds',
@@ -16,11 +14,9 @@ cli
       default: 0,
     }
   )
-  .option(
-    '--number-of-iris-per-request [number]',
-    'Number of IRIs to collect per request',
-    {default: 1000}
-  )
+  .option('--batch-size [number]', 'Number of IRIs from the queue to process', {
+    default: 1000,
+  })
   .option(
     '--resource-dir <string>',
     'Directory for storing RDF resources of collected IRIs'
