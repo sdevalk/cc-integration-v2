@@ -68,7 +68,7 @@ export class Filestore {
     return path;
   }
 
-  async deleteByPath(path: string) {
+  private async deleteByPath(path: string) {
     pathSchema.parse(path);
 
     try {
