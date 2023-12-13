@@ -39,6 +39,7 @@ export type SaveOptions = {
 
 export class Filestore {
   private dir: string;
+  private static fileExtension = '.nt'; // N-Triples
 
   constructor(options: ConstructorOptions) {
     const opts = constructorOptionsSchema.parse(options);
@@ -54,16 +55,17 @@ export class Filestore {
     iriSchema.parse(iri);
 
     const hashOfIri = this.createHashFromIri(iri);
+    const filename = hashOfIri + Filestore.fileExtension;
 
     // A large number of files in a single directory can slow down file access;
     // create a multi-level directory hierarchy instead by using the last characters
-    // of the filename's MD5 (similar to the file caching strategy of Nginx)
+    // of the filename's hash (similar to the file caching strategy of Nginx)
     const subDir1 = hashOfIri.substring(hashOfIri.length - 1);
     const subDir2 = hashOfIri.substring(
       hashOfIri.length - 2,
       hashOfIri.length - 1
     );
-    const path = join(this.dir, subDir1, subDir2, hashOfIri + '.nt');
+    const path = join(this.dir, subDir1, subDir2, filename);
 
     return path;
   }
@@ -93,13 +95,16 @@ export class Filestore {
   async deleteIfMatches(matchFn: (hashOfIri: string) => Promise<boolean>) {
     matchFnSchema.parse(matchFn);
 
-    const filesStream = globStream(`${this.dir}/**/*.nt`, {
-      nodir: true,
-      absolute: true,
-    });
+    const filesStream = globStream(
+      `${this.dir}/**/*${Filestore.fileExtension}`,
+      {
+        nodir: true,
+        absolute: true,
+      }
+    );
 
     for await (const path of filesStream) {
-      const hashOfIri = basename(path, '.nt');
+      const hashOfIri = basename(path, Filestore.fileExtension);
       const isMatch = await matchFn(hashOfIri);
       if (isMatch) {
         await this.deleteByPath(path);
