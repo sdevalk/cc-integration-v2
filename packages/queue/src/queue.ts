@@ -1,4 +1,4 @@
-import {Database, NewItem, ItemUpdate} from './types.js';
+import {Database, NewItem} from './types.js';
 import SQLite from 'better-sqlite3';
 import {FileMigrationProvider, Migrator, Kysely, SqliteDialect} from 'kysely';
 import fs from 'node:fs/promises';
@@ -11,6 +11,14 @@ export const constructorOptionsSchema = z.object({
 });
 
 export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;
+
+export const getAllOptionsSchema = z
+  .object({
+    limit: z.number().int().min(1).optional(),
+  })
+  .default({});
+
+export type GetAllOptions = z.input<typeof getAllOptionsSchema>;
 
 export class Queue {
   private db: Kysely<Database>;
@@ -30,7 +38,7 @@ export class Queue {
   }
 
   private async init() {
-    // Create the database if it doesn't exist and run the latest migrations
+    // Run the latest migrations
     const dirname = fileURLToPath(new URL('.', import.meta.url));
     const migrationFolder = path.join(dirname, 'migrations');
     const provider = new FileMigrationProvider({
@@ -40,17 +48,9 @@ export class Queue {
     });
 
     const migrator = new Migrator({db: this.db, provider});
-    const {error, results} = await migrator.migrateToLatest();
-
-    results?.forEach(result => {
-      if (result.status === 'Error') {
-        console.error(`Failed to execute migration "${result.migrationName}"`);
-      }
-    });
+    const {error} = await migrator.migrateToLatest();
 
     if (error) {
-      console.error('Failed to migrate');
-      console.error(error);
       throw error;
     }
   }
@@ -70,30 +70,20 @@ export class Queue {
       .executeTakeFirstOrThrow();
   }
 
-  async update(id: number, updateWith: ItemUpdate) {
-    return this.db
-      .updateTable('queue')
-      .set(updateWith)
-      .where('id', '=', id)
-      .execute();
-  }
-
   async remove(id: number) {
-    return this.db
-      .deleteFrom('queue')
-      .where('id', '=', id)
-      .returningAll()
-      .executeTakeFirst();
+    await this.db.deleteFrom('queue').where('id', '=', id).execute();
   }
 
-  async getPending(limit?: number) {
+  async getAll(options?: GetAllOptions) {
+    const opts = getAllOptionsSchema.parse(options);
+
     const query = this.db
       .selectFrom('queue')
       .orderBy('created_at asc') // FIFO
       .selectAll();
 
-    if (limit !== undefined) {
-      query.limit(limit);
+    if (opts.limit !== undefined) {
+      query.limit(opts.limit);
     }
 
     return query.execute();

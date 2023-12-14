@@ -1,10 +1,4 @@
-import {
-  ColumnType,
-  Generated,
-  Insertable,
-  Selectable,
-  Updateable,
-} from 'kysely';
+import {ColumnType, Generated, Insertable, Selectable} from 'kysely';
 
 export interface Database {
   queue: QueueTable;
@@ -30,4 +24,3 @@ export interface QueueTable {
 // make sure that the correct types are used in each operation.
 export type Item = Selectable<QueueTable>;
 export type NewItem = Insertable<QueueTable>;
-export type ItemUpdate = Updateable<QueueTable>;

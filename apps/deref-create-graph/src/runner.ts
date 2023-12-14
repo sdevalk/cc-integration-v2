@@ -43,14 +43,14 @@ export async function run(options: RunOptions) {
   };
 
   const derefQueue = fastq.promise(save, opts.numberOfConcurrentRequests);
-  const items = await queue.getPending(opts.batchSize);
+  const items = await queue.getAll({limit: opts.batchSize});
   logger.info(`Dereferencing ${items.length} IRIs`);
 
   for (const item of items) {
     derefQueue.push(item).catch(err => {
       logger.error(
         err,
-        `An error occurred when dereferencing IRI ${item.iri}: ${err.message}`
+        `An error occurred when saving "${item.iri}": ${err.message}`
       );
     });
   }

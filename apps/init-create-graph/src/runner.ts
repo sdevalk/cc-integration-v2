@@ -66,7 +66,7 @@ export async function run(options: RunOptions) {
 
   // Compare the queued IRIs with those previously stored on file,
   // removing files that have become obsolete
-  const items = await queue.getPending();
+  const items = await queue.getAll();
   const hashesOfCurrentIris = items.map(item =>
     filestore.createHashFromIri(item.iri)
   );

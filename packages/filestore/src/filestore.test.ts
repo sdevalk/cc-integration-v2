@@ -8,7 +8,7 @@ import {beforeEach, describe, expect, it} from 'vitest';
 const dereferencer = rdfDereferencer.default ?? rdfDereferencer;
 
 const dir = './tmp/';
-const store = new Filestore({dir});
+const filestore = new Filestore({dir});
 
 beforeEach(async () => {
   await rimraf(dir);
@@ -16,7 +16,7 @@ beforeEach(async () => {
 
 describe('createHashFromIri', () => {
   it('creates a path from an IRI', async () => {
-    const hash = store.createHashFromIri('http://localhost/resource');
+    const hash = filestore.createHashFromIri('http://localhost/resource');
 
     expect(hash).toEqual('d388f3dc1aaec96db5e05936bfb1aa0b');
   });
@@ -24,7 +24,7 @@ describe('createHashFromIri', () => {
 
 describe('createPathFromIri', () => {
   it('creates a path from an IRI', async () => {
-    const path = store.createPathFromIri('http://localhost/resource');
+    const path = filestore.createPathFromIri('http://localhost/resource');
 
     expect(path.endsWith('tmp/b/0/d388f3dc1aaec96db5e05936bfb1aa0b.nt')).toBe(
       true
@@ -33,7 +33,7 @@ describe('createPathFromIri', () => {
 });
 
 describe('deleteByIri', () => {
-  const store = new Filestore({dir: './tmp/'});
+  const filestore = new Filestore({dir: './tmp/'});
   const iri = 'http://localhost/resource';
 
   beforeEach(async () => {
@@ -41,23 +41,23 @@ describe('deleteByIri', () => {
       localFiles: true,
     });
 
-    await store.save({iri, quadStream: data});
+    await filestore.save({iri, quadStream: data});
   });
 
   it('does not throw if a resource does not exist', async () => {
-    await store.deleteByIri('http://localhost/doesnotexist');
+    await filestore.deleteByIri('http://localhost/doesnotexist');
   });
 
   it('deletes a resource', async () => {
-    await store.deleteByIri(iri);
+    await filestore.deleteByIri(iri);
 
-    const path = store.createPathFromIri(iri);
+    const path = filestore.createPathFromIri(iri);
     expect(existsSync(path)).toBe(false);
   });
 });
 
 describe('deleteIfMatches', () => {
-  const store = new Filestore({dir: './tmp/'});
+  const filestore = new Filestore({dir: './tmp/'});
   const iri1 = 'http://localhost/resource1';
   const iri2 = 'http://localhost/resource2';
 
@@ -66,29 +66,29 @@ describe('deleteIfMatches', () => {
       localFiles: true,
     });
 
-    await store.save({iri: iri1, quadStream: data});
-    await store.save({iri: iri2, quadStream: data});
+    await filestore.save({iri: iri1, quadStream: data});
+    await filestore.save({iri: iri2, quadStream: data});
   });
 
   it('deletes resources', async () => {
-    const hashesOfIrisThatMustBeDeleted = [store.createHashFromIri(iri1)];
+    const hashesOfIrisThatMustBeDeleted = [filestore.createHashFromIri(iri1)];
     const matchFn = async (hashOfIri: string) =>
       hashesOfIrisThatMustBeDeleted.includes(hashOfIri);
 
-    const deleteCount = await store.deleteIfMatches(matchFn);
+    const deleteCount = await filestore.deleteIfMatches(matchFn);
 
     expect(deleteCount).toBe(1);
 
-    const path1 = store.createPathFromIri(iri1);
-    expect(existsSync(path1)).toBe(false);
+    const pathOfIri1 = filestore.createPathFromIri(iri1);
+    expect(existsSync(pathOfIri1)).toBe(false);
 
-    const path2 = store.createPathFromIri(iri2);
-    expect(existsSync(path2)).toBe(true);
+    const pathOfIri2 = filestore.createPathFromIri(iri2);
+    expect(existsSync(pathOfIri2)).toBe(true);
   });
 });
 
 describe('save', () => {
-  const store = new Filestore({dir: './tmp/'});
+  const filestore = new Filestore({dir: './tmp/'});
   const iri = 'http://localhost/resource';
 
   it('saves a resource', async () => {
@@ -96,9 +96,9 @@ describe('save', () => {
       localFiles: true,
     });
 
-    await store.save({iri, quadStream: data});
+    await filestore.save({iri, quadStream: data});
 
-    const path = store.createPathFromIri(iri);
+    const path = filestore.createPathFromIri(iri);
     expect(existsSync(path)).toBe(true);
   });
 });

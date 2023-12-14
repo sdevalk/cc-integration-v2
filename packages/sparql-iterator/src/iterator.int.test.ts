@@ -56,7 +56,6 @@ describe('run', () => {
 
     // This can change if the source data changes
     expect(numberOfEmits).toBe(5);
-
     expect(savedIris).toEqual(
       expect.arrayContaining([
         'http://dbpedia.org/resource/John_McCallum_(sports_writer)',
