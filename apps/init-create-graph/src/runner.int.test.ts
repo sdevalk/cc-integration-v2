@@ -7,13 +7,13 @@ import {join} from 'node:path';
 import {rimraf} from 'rimraf';
 import {beforeEach, describe, expect, it} from 'vitest';
 
-const tmpDir = './tmp/dbpedia';
+const tmpDir = './tmp/integration';
 const resourceDir = join(tmpDir, 'resources');
 const queueFile = join(tmpDir, 'queue.sqlite');
 
 beforeEach(async () => {
   await rimraf(tmpDir);
-  await mkdir(tmpDir);
+  await mkdir(tmpDir, {recursive: true});
 });
 
 describe('run', () => {
@@ -81,6 +81,7 @@ describe('run', () => {
       'http://dbpedia.org/resource/John_McCallum_(Australian_politician)';
     const filestore = new Filestore({dir: resourceDir});
     const pathOfObsoleteIri = filestore.createPathFromIri(obsoleteIri);
+
     expect(existsSync(pathOfObsoleteIri)).toBe(false);
   });
 });

@@ -4,7 +4,6 @@ import {Queue} from '@colonial-collections/queue';
 import {Iterator} from '@colonial-collections/sparql-iterator';
 import fastq from 'fastq';
 import {readFile} from 'node:fs/promises';
-import {performance} from 'node:perf_hooks';
 import PrettyMilliseconds from 'pretty-ms';
 import {z} from 'zod';
 
@@ -17,18 +16,17 @@ const runOptionsSchema = z.object({
   queueFile: z.string(),
 });
 
-export type RunOptions = z.infer<typeof runOptionsSchema>;
+export type RunOptions = z.input<typeof runOptionsSchema>;
 
 export async function run(options: RunOptions) {
   const opts = runOptionsSchema.parse(options);
 
-  const startTime = performance.now();
+  const startTime = Date.now();
   const logger = getLogger();
   const filestore = new Filestore({dir: opts.resourceDir});
   const queue = await Queue.new({path: opts.queueFile});
 
-  const isEmpty = await queue.isEmpty();
-  if (!isEmpty) {
+  if (!(await queue.isEmpty())) {
     logger.info('Cannot run: the queue is not empty');
     return;
   }
@@ -78,7 +76,7 @@ export async function run(options: RunOptions) {
     `Deleted ${deleteCount} obsolete resources in "${opts.resourceDir}"`
   );
 
-  const finishTime = performance.now();
+  const finishTime = Date.now();
   const runtime = finishTime - startTime;
   logger.info(`Done in ${PrettyMilliseconds(runtime)}`);
 }

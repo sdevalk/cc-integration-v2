@@ -6,7 +6,7 @@ import type {RunOptions} from './runner.js';
 const cli = cac();
 
 cli
-  .command('run', 'Collect IRIs from a SPARQL endpoint')
+  .command('run', 'Create a graph by dereferencing IRIs')
   .option(
     '--number-of-concurrent-requests [number]',
     'Number of concurrent requests',
@@ -21,14 +21,14 @@ cli
       default: 0,
     }
   )
+  .option(
+    '--resource-dir <string>',
+    'Directory for storing RDF resources of dereferenced IRIs'
+  )
+  .option('--queue-file <string>', 'File with the queue')
   .option('--batch-size [number]', 'Number of IRIs from the queue to process', {
     default: 1000,
   })
-  .option(
-    '--resource-dir <string>',
-    'Directory for storing RDF resources of collected IRIs'
-  )
-  .option('--queue-file <string>', 'File with the queue')
   .action(async (options: RunOptions) => {
     import('./runner.js').then(action => action.run(options));
   });

@@ -77,13 +77,13 @@ export class Queue {
   async getAll(options?: GetAllOptions) {
     const opts = getAllOptionsSchema.parse(options);
 
-    const query = this.db
+    let query = this.db
       .selectFrom('queue')
       .orderBy('created_at asc') // FIFO
       .selectAll();
 
     if (opts.limit !== undefined) {
-      query.limit(opts.limit);
+      query = query.limit(opts.limit);
     }
 
     return query.execute();
