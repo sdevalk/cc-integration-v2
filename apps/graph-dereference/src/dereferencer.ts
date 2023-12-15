@@ -33,7 +33,7 @@ export async function run(options: RunOptions) {
   dereferencer.on('warning', (err: Error) => logger.warn(err));
 
   const save = async (item: Item) => {
-    const quadStream = await dereferencer.run(item.iri);
+    const quadStream = await dereferencer.getResource(item.iri);
     await filestore.save({iri: item.iri, quadStream});
     await queue.remove(item.id);
     await setTimeout(opts.waitBetweenRequests); // Try not to hurt the server or trigger its rate limiter

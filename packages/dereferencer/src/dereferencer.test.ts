@@ -63,7 +63,7 @@ async function expectStreamToMatch(quadStream: Stream) {
 beforeAll(() => server.listen());
 afterAll(() => server.close());
 
-describe('run', () => {
+describe('getResource', () => {
   it('throws if resource could not be dereferenced', async () => {
     expect.assertions(5); // Including retries
 
@@ -77,7 +77,7 @@ empty response`
     });
 
     try {
-      await dereferencer.run('http://localhost/error.ttl');
+      await dereferencer.getResource('http://localhost/error.ttl');
     } catch (err) {
       const error = err as Error;
       expect(error.message).toEqual(
@@ -90,13 +90,15 @@ empty response`
   it('dereferences a resource', async () => {
     const dereferencer = new Dereferencer();
 
-    const quadStream = await dereferencer.run('http://localhost/resource.ttl');
+    const quadStream = await dereferencer.getResource(
+      'http://localhost/resource.ttl'
+    );
 
     await expectStreamToMatch(quadStream);
   });
 });
 
-describe('run - with basic authentication', () => {
+describe('getResource - with basic authentication', () => {
   it('throws if credentials are invalid', async () => {
     expect.assertions(1);
 
@@ -109,7 +111,9 @@ describe('run - with basic authentication', () => {
     });
 
     try {
-      await dereferencer.run('http://localhost/resource-with-basic-auth.ttl');
+      await dereferencer.getResource(
+        'http://localhost/resource-with-basic-auth.ttl'
+      );
     } catch (err) {
       const error = err as Error;
       expect(error.message).toEqual(
@@ -128,7 +132,7 @@ empty response`
       },
     });
 
-    const quadStream = await dereferencer.run(
+    const quadStream = await dereferencer.getResource(
       'http://localhost/resource-with-basic-auth.ttl'
     );
 
@@ -136,7 +140,7 @@ empty response`
   });
 });
 
-describe('run - with headers', () => {
+describe('getResource - with headers', () => {
   it('throws if HTTP header is invalid when dereferencing', async () => {
     expect.assertions(1);
 
@@ -147,7 +151,7 @@ describe('run - with headers', () => {
     });
 
     try {
-      await dereferencer.run(
+      await dereferencer.getResource(
         'http://localhost/resource-with-accept-header.ttl'
       );
     } catch (err) {
@@ -166,7 +170,7 @@ empty response`
       },
     });
 
-    const quadStream = await dereferencer.run(
+    const quadStream = await dereferencer.getResource(
       'http://localhost/resource-with-accept-header.ttl'
     );
 

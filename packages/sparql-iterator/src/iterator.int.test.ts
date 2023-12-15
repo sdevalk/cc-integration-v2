@@ -1,22 +1,36 @@
-import {Iterator} from './iterator.js';
+import {SparqlIterator} from './iterator.js';
 import fastq from 'fastq';
-import {readFile} from 'node:fs/promises';
-import {beforeEach, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
+
+const query = `
+  PREFIX dbo:	<http://dbpedia.org/ontology/>
+  PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+  # A random selection of resources
+  SELECT ?this
+  WHERE {
+    {
+      SELECT ?this
+      WHERE {
+        ?this a dbo:Person ;
+          foaf:name ?name .
+        FILTER(CONTAINS(?name, "John McCallum"))
+      }
+    }
+  }
+  LIMIT ?_limit
+  OFFSET ?_offset
+`;
 
 describe('run', () => {
-  let query: string;
-
-  beforeEach(async () => {
-    query = await readFile('./fixtures/iterate.rq', 'utf-8');
-  });
-
   it('errors if the endpoint is invalid', async () => {
     expect.assertions(5); // Including retries
 
     const save = async () => {}; // No-op
     const queue = fastq.promise(save, 1);
 
-    const iterator = new Iterator({
+    const iterator = new SparqlIterator({
       endpointUrl: 'http://localhost',
       query,
       queue,
@@ -42,7 +56,7 @@ describe('run', () => {
     const save = async (iri: string) => savedIris.push(iri);
     const queue = fastq.promise(save, 1);
 
-    const iterator = new Iterator({
+    const iterator = new SparqlIterator({
       endpointUrl: 'https://dbpedia.org/sparql',
       numberOfIrisPerRequest: 1,
       query,

@@ -1,7 +1,7 @@
 import {getLogger} from '@colonial-collections/common';
 import {Filestore} from '@colonial-collections/filestore';
 import {Queue} from '@colonial-collections/queue';
-import {Iterator} from '@colonial-collections/sparql-iterator';
+import {SparqlIterator} from '@colonial-collections/sparql-iterator';
 import fastq from 'fastq';
 import {readFile} from 'node:fs/promises';
 import PrettyMilliseconds from 'pretty-ms';
@@ -36,7 +36,7 @@ export async function run(options: RunOptions) {
   const iteratorQueue = fastq.promise(save, 1); // Concurrency
   const query = await readFile(opts.queryFile, 'utf-8');
 
-  const iterator = new Iterator({
+  const iterator = new SparqlIterator({
     endpointUrl: opts.endpointUrl,
     waitBetweenRequests: opts.waitBetweenRequests,
     numberOfIrisPerRequest: opts.numberOfIrisPerRequest,

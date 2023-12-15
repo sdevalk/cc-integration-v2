@@ -17,7 +17,7 @@ export const constructorOptionsSchema = z.object({
 
 export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;
 
-export class Iterator extends EventEmitter {
+export class SparqlIterator extends EventEmitter {
   private readonly endpointUrl: string;
   private readonly numberOfIrisPerRequest: number;
   private readonly waitBetweenRequests: number;
@@ -49,9 +49,7 @@ export class Iterator extends EventEmitter {
       binding => query.indexOf(binding) !== -1
     );
     if (!hasBindings) {
-      throw new Error(
-        `Bindings are missing in iterate query: ${bindings.join(', ')}`
-      );
+      throw new Error(`Bindings are missing in query: ${bindings.join(', ')}`);
     }
 
     return query;
@@ -63,8 +61,8 @@ export class Iterator extends EventEmitter {
 
     // TBD: instead of doing string replacements, generate a new SPARQL query using sparqljs?
     const query = this.query
-      .replace('?_limit', limit.toString())
-      .replace('?_offset', offset.toString());
+      .replaceAll('?_limit', limit.toString())
+      .replaceAll('?_offset', offset.toString());
 
     const run = async () => this.fetcher.fetchBindings(this.endpointUrl, query);
 
@@ -129,5 +127,6 @@ export class Iterator extends EventEmitter {
 
   async run() {
     await this.collectIris();
+    await this.queue.drained();
   }
 }

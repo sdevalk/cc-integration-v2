@@ -1,3 +1,3 @@
 # Dereferencer
 
-Dereferences IRIs
+Gets resources by dereferencing IRIs

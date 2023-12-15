@@ -65,7 +65,7 @@ export class Dereferencer extends EventEmitter {
     return dereferenceOptions;
   }
 
-  async run(iri: string) {
+  async getResource(iri: string) {
     const run = async () =>
       dereferencer.dereference(iri, this.dereferenceOptions);
 
