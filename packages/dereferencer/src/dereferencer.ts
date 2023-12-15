@@ -23,7 +23,7 @@ const constructorOptionsSchema = z
 export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;
 
 export class Dereferencer extends EventEmitter {
-  private dereferenceOptions: IDereferenceOptions;
+  private readonly dereferenceOptions: IDereferenceOptions;
 
   constructor(options?: ConstructorOptions) {
     super();

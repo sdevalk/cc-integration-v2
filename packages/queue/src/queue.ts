@@ -21,7 +21,7 @@ export const getAllOptionsSchema = z
 export type GetAllOptions = z.input<typeof getAllOptionsSchema>;
 
 export class Queue {
-  private db: Kysely<Database>;
+  private readonly db: Kysely<Database>;
 
   private constructor(options: ConstructorOptions) {
     const opts = constructorOptionsSchema.parse(options);

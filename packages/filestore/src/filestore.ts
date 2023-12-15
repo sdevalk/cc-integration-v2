@@ -38,8 +38,8 @@ export type SaveOptions = {
 };
 
 export class Filestore {
-  private dir: string;
-  private static fileExtension = '.nt'; // N-Triples
+  private readonly dir: string;
+  private static readonly fileExtension = '.nt'; // N-Triples
 
   constructor(options: ConstructorOptions) {
     const opts = constructorOptionsSchema.parse(options);

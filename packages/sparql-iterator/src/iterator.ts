@@ -18,12 +18,12 @@ export const constructorOptionsSchema = z.object({
 export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;
 
 export class Iterator extends EventEmitter {
-  private endpointUrl: string;
-  private numberOfIrisPerRequest: number;
-  private waitBetweenRequests: number;
-  private fetcher: SparqlEndpointFetcher;
-  private query: string;
-  private queue: queueAsPromised<string>;
+  private readonly endpointUrl: string;
+  private readonly numberOfIrisPerRequest: number;
+  private readonly waitBetweenRequests: number;
+  private readonly fetcher: SparqlEndpointFetcher;
+  private readonly query: string;
+  private readonly queue: queueAsPromised<string>;
 
   constructor(options: ConstructorOptions) {
     super();

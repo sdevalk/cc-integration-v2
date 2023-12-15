@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsup",
     "test": "vitest --coverage",
-    "test:once": "vitest --run"
+    "test:once": "vitest --run --passWithNoTests"
   },
   "dependencies": {
     "pino": "8.16.2"
