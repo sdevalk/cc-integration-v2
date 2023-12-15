@@ -1,0 +1,25 @@
+name: Collect IRIs from dataset 'DBpedia'
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  update-kg:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - run: npx turbo run build --filter=@colonial-collections/graph-init
+      - name: Collect and queue IRIs from a SPARQL endpoint
+        run: |
+          ./apps/graph-init/dist/cli.js run \
+            --endpoint-url "https://dbpedia.org/sparql" \
+            --query-file ./apps/graph-init/fixtures/iterate-1.rq \
+            --number-of-iris-per-request 10 \
+            --wait-between-requests 500 \
+            --resource-dir ./resources \
+            --queue-file ./queue.sqlite
