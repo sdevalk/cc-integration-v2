@@ -1,4 +1,6 @@
-# Deref Create Graph
+# Graph dereference
+
+Create or update a graph by dereferencing IRIs
 
 ## Commands
 
@@ -6,7 +8,7 @@
 
 #### DBpedia
 
-##### Create a graph by dereferencing IRIs
+##### Create or update a graph by dereferencing IRIs
 
     cp ./fixtures/filled-queue.sqlite ./tmp/filled-queue.sqlite
 

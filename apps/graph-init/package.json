@@ -1,5 +1,5 @@
 {
-  "name": "@colonial-collections/deref-create-graph",
+  "name": "@colonial-collections/graph-init",
   "version": "1.0.0",
   "type": "module",
   "private": true,
@@ -12,9 +12,9 @@
   },
   "dependencies": {
     "@colonial-collections/common": "*",
-    "@colonial-collections/dereferencer": "*",
     "@colonial-collections/filestore": "*",
     "@colonial-collections/queue": "*",
+    "@colonial-collections/sparql-iterator": "*",
     "cac": "6.7.14",
     "fastq": "1.15.0",
     "pretty-ms": "8.0.0",

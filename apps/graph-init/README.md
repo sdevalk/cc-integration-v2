@@ -1,4 +1,6 @@
-# Init Create Graph
+# Graph init
+
+Initialize the creating or updating of a graph
 
 ## Commands
 

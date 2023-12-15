@@ -86,6 +86,7 @@ export class Iterator extends EventEmitter {
       const bindings = rawBindings as unknown as IBindings; // TS assumes it's a string or Buffer
       const iri = bindings.this.value;
 
+      // Use a queue to have more control compared to an event emit() - https://www.youtube.com/watch?v=Ra7Ji9LmG9o
       this.queue.push(iri).catch(err => {
         const prettyError = new Error(
           `An error occurred when pushing IRI "${iri}" to queue: ${err.message}`

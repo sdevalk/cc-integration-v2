@@ -6,7 +6,7 @@ import type {RunOptions} from './runner.js';
 const cli = cac();
 
 cli
-  .command('run', 'Create a graph by dereferencing IRIs')
+  .command('run', 'Create or update a graph by dereferencing IRIs')
   .option(
     '--number-of-concurrent-requests [number]',
     'Number of concurrent requests',
