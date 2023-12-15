@@ -1,4 +1,4 @@
-import {run} from './uploader.js';
+import {run} from './upload.js';
 import {env} from 'node:process';
 import {describe, expect, it} from 'vitest';
 

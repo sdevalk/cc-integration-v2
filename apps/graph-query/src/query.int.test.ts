@@ -1,4 +1,4 @@
-import {run} from './dereferencer.js';
+import {run} from './query.js';
 import {Filestore} from '@colonial-collections/filestore';
 import {Queue} from '@colonial-collections/queue';
 import {existsSync} from 'node:fs';
@@ -10,6 +10,7 @@ import {beforeEach, describe, expect, it} from 'vitest';
 const tmpDir = './tmp/integration';
 const resourceDir = join(tmpDir, 'resources');
 const queueFile = join(tmpDir, 'queue.sqlite');
+const queryFile = './fixtures/generate.rq';
 
 beforeEach(async () => {
   await rimraf(tmpDir);
@@ -24,6 +25,8 @@ describe('run', () => {
       await run({
         resourceDir,
         queueFile: './fixtures/empty-queue.sqlite',
+        endpointUrl: 'https://vocab.getty.edu/sparql',
+        queryFile,
       });
     } catch (err) {
       const error = err as Error;
@@ -34,7 +37,7 @@ describe('run', () => {
 
 describe('run', () => {
   let queue: Queue;
-  const iri = 'http://dbpedia.org/resource/Jack_Dowding_(footballer)';
+  const iri = 'http://vocab.getty.edu/aat/300111999';
 
   beforeEach(async () => {
     queue = await Queue.new({path: queueFile});
@@ -45,6 +48,8 @@ describe('run', () => {
     await run({
       resourceDir,
       queueFile,
+      endpointUrl: 'https://vocab.getty.edu/sparql',
+      queryFile,
     });
 
     const isEmpty = await queue.isEmpty();
@@ -59,9 +64,8 @@ describe('run', () => {
 
 describe('run', () => {
   let queue: Queue;
-  const iri1 = 'http://dbpedia.org/resource/Jack_Dowding_(footballer)';
-  const iri2 =
-    'http://dbpedia.org/resource/John_McCallum_(Australian_politician)';
+  const iri1 = 'http://vocab.getty.edu/aat/300111999';
+  const iri2 = 'http://vocab.getty.edu/aat/300027200';
 
   beforeEach(async () => {
     queue = await Queue.new({path: queueFile});
@@ -73,15 +77,15 @@ describe('run', () => {
     await run({
       resourceDir,
       queueFile,
+      endpointUrl: 'https://vocab.getty.edu/sparql',
+      queryFile,
       batchSize: 1,
     });
 
     const items = await queue.getAll();
     const iris = items.map(item => item.iri);
 
-    expect(iris).toEqual([
-      'http://dbpedia.org/resource/John_McCallum_(Australian_politician)',
-    ]);
+    expect(iris).toEqual(['http://vocab.getty.edu/aat/300027200']);
 
     const filestore = new Filestore({dir: resourceDir});
     const pathOfUnprocessedIri = filestore.createPathFromIri(iri2);

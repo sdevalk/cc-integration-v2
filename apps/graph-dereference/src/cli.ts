@@ -1,17 +1,14 @@
 #!/bin/env node
 
 import {cac} from 'cac';
-import type {RunOptions as DeferenceRunOptions} from './dereferencer.js';
-import type {RunOptions as UploadRunOptions} from './uploader.js';
+import type {RunOptions as DeferenceRunOptions} from './dereference.js';
+import type {RunOptions as UploadRunOptions} from './upload.js';
 
 const cli = cac();
 
 cli
   .command('dereference', 'Create or update graph by dereferencing IRIs')
-  .option(
-    '--resource-dir <string>',
-    'Directory for storing RDF resources of dereferenced IRIs'
-  )
+  .option('--resource-dir <string>', 'Directory for storing RDF resources')
   .option('--queue-file <string>', 'File with the queue')
   .option(
     '--number-of-concurrent-requests [number]',
@@ -31,7 +28,7 @@ cli
     default: 1000,
   })
   .action(async (options: DeferenceRunOptions) => {
-    import('./dereferencer.js').then(action =>
+    import('./dereference.js').then(action =>
       action.run(options).catch(err => {
         console.error(err);
         process.exitCode = 1;
@@ -55,7 +52,7 @@ cli
     'Name of the graph to upload the RDF resources to'
   )
   .action(async (options: UploadRunOptions) => {
-    import('./uploader.js').then(action =>
+    import('./upload.js').then(action =>
       action.run(options).catch(err => {
         console.error(err);
         process.exitCode = 1;

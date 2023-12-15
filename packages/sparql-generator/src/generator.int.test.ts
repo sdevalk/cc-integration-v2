@@ -1,6 +1,5 @@
 import {SparqlGenerator} from './generator.js';
 import getStream from 'get-stream';
-import {EOL} from 'os';
 import rdfSerializer from 'rdf-serialize';
 import {describe, expect, it} from 'vitest';
 
@@ -11,14 +10,13 @@ const query = `
   PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
   CONSTRUCT {
     ?this a skos:Concept ;
-      skos:prefLabel ?prefLabel ;
-      skos:altLabel ?altLabel .
+      skos:prefLabel ?prefLabel .
   }
   WHERE {
     BIND(?_iri AS ?this)
     ?this a skos:Concept ;
       skos:prefLabel ?prefLabel .
-    OPTIONAL { ?this skos:altLabel ?altlabel }
+    FILTER(LANGMATCHES(LANG(?prefLabel), "en"))
   }
 `;
 
@@ -60,11 +58,10 @@ describe('getResource', () => {
     });
     const result = await getStream(dataStream);
 
-    // Cheap check - this may be changed if the source data changes
-    const firstLine = result.split(EOL)[0];
-
-    expect(firstLine).toEqual(
-      '<http://vocab.getty.edu/aat/300111999> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .'
+    expect(result).toEqual(
+      `<http://vocab.getty.edu/aat/300111999> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://vocab.getty.edu/aat/300111999> <http://www.w3.org/2004/02/skos/core#prefLabel> "publications (documents)"@en .
+`
     );
   });
 });

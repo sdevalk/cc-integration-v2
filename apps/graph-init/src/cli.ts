@@ -1,7 +1,7 @@
 #!/bin/env node
 
 import {cac} from 'cac';
-import type {RunOptions} from './runner.js';
+import type {RunOptions} from './run.js';
 
 const cli = cac();
 
@@ -27,7 +27,7 @@ cli
   )
   .option('--queue-file <string>', 'File with the queue')
   .action(async (options: RunOptions) => {
-    import('./runner.js').then(action =>
+    import('./run.js').then(action =>
       action.run(options).catch(err => {
         console.error(err);
         process.exitCode = 1;

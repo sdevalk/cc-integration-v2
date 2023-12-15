@@ -88,6 +88,15 @@ export class Queue {
     return query.execute();
   }
 
+  async size() {
+    const record = await this.db
+      .selectFrom('queue')
+      .select(eb => eb.fn.count<number>('id').as('count'))
+      .executeTakeFirstOrThrow();
+
+    return record.count;
+  }
+
   async isEmpty() {
     const record = await this.db
       .selectFrom('queue')
