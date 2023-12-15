@@ -37,8 +37,7 @@ export class Queue {
     this.db = new Kysely<Database>({dialect});
   }
 
-  private async init() {
-    // Run the latest migrations
+  private async runMigrations() {
     const dirname = fileURLToPath(new URL('.', import.meta.url));
     const migrationFolder = path.join(dirname, 'migrations');
     const provider = new FileMigrationProvider({
@@ -57,7 +56,7 @@ export class Queue {
 
   static async new(options: ConstructorOptions) {
     const queue = new Queue(options);
-    await queue.init();
+    await queue.runMigrations();
 
     return queue;
   }
