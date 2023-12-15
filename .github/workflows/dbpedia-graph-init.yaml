@@ -5,7 +5,8 @@ on:
     branches: ["main"]
 
 jobs:
-  update-kg:
+
+  graph-init:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,3 +24,21 @@ jobs:
             --wait-between-requests 500 \
             --resource-dir ./resources \
             --queue-file ./queue.sqlite
+
+  graph-dereference:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - run: npx turbo run build --filter=@colonial-collections/graph-dereference
+      - name: Create or update a graph by dereferencing IRIs
+        run: |
+          ./apps/graph-dereference/dist/cli.js dereference \
+            --resource-dir ./resources \
+            --queue-file ./queue.sqlite \
+            --number-of-concurrent-requests 1 \
+            --wait-between-requests 100 \
+            --batch-size 10
