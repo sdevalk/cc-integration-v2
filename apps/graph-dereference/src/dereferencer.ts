@@ -8,10 +8,10 @@ import PrettyMilliseconds from 'pretty-ms';
 import {z} from 'zod';
 
 const runOptionsSchema = z.object({
-  numberOfConcurrentRequests: z.number().min(1).default(1),
-  waitBetweenRequests: z.number().min(0).optional(),
   resourceDir: z.string(),
   queueFile: z.string(),
+  numberOfConcurrentRequests: z.number().min(1).default(1),
+  waitBetweenRequests: z.number().min(0).optional(),
   batchSize: z.number().min(1).default(1000),
 });
 
@@ -54,10 +54,6 @@ export async function run(options: RunOptions) {
   }
 
   await derefQueue.drained();
-
-  if (await queue.isEmpty()) {
-    // TODO: upload files to RDF store
-  }
 
   const finishTime = Date.now();
   const runtime = finishTime - startTime;

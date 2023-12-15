@@ -1,4 +1,4 @@
-import {run} from './runner.js';
+import {run} from './dereferencer.js';
 import {Filestore} from '@colonial-collections/filestore';
 import {Queue} from '@colonial-collections/queue';
 import {existsSync} from 'node:fs';
