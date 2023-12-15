@@ -28,8 +28,7 @@ export async function run(options: RunOptions) {
 
   // Only allowed to upload the RDF resources if all items in the queue have been processed
   if (!(await queue.isEmpty())) {
-    logger.info('Cannot run: the queue is not empty');
-    return;
+    throw new Error('Cannot run: the queue is not empty');
   }
 
   const triplyDb = await TriplyDb.new({

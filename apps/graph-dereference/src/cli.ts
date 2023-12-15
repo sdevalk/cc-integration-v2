@@ -31,7 +31,12 @@ cli
     default: 1000,
   })
   .action(async (options: DeferenceRunOptions) => {
-    import('./dereferencer.js').then(action => action.run(options));
+    import('./dereferencer.js').then(action =>
+      action.run(options).catch(err => {
+        console.error(err);
+        process.exitCode = 1;
+      })
+    );
   });
 
 cli
@@ -50,7 +55,12 @@ cli
     'Name of the graph to upload the RDF resources to'
   )
   .action(async (options: UploadRunOptions) => {
-    import('./uploader.js').then(action => action.run(options));
+    import('./uploader.js').then(action =>
+      action.run(options).catch(err => {
+        console.error(err);
+        process.exitCode = 1;
+      })
+    );
   });
 
 cli.help();

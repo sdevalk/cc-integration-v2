@@ -17,13 +17,20 @@ beforeEach(async () => {
 });
 
 describe('run', () => {
-  it('does not run if queue is not empty', async () => {
-    await run({
-      endpointUrl: 'https://dbpedia.org/sparql',
-      queryFile: './fixtures/iterate-1.rq',
-      resourceDir,
-      queueFile: './fixtures/non-empty-queue.sqlite',
-    });
+  it('throws if queue is not empty', async () => {
+    expect.assertions(1);
+
+    try {
+      await run({
+        endpointUrl: 'https://dbpedia.org/sparql',
+        queryFile: './fixtures/iterate-1.rq',
+        resourceDir,
+        queueFile: './fixtures/non-empty-queue.sqlite',
+      });
+    } catch (err) {
+      const error = err as Error;
+      expect(error.message).toEqual('Cannot run: the queue is not empty');
+    }
   });
 });
 

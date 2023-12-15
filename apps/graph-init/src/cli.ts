@@ -27,7 +27,12 @@ cli
   )
   .option('--queue-file <string>', 'File with the queue')
   .action(async (options: RunOptions) => {
-    import('./runner.js').then(action => action.run(options));
+    import('./runner.js').then(action =>
+      action.run(options).catch(err => {
+        console.error(err);
+        process.exitCode = 1;
+      })
+    );
   });
 
 cli.help();

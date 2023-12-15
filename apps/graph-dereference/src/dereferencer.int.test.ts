@@ -17,11 +17,18 @@ beforeEach(async () => {
 });
 
 describe('run', () => {
-  it('does not run if queue is empty', async () => {
-    await run({
-      resourceDir,
-      queueFile: './fixtures/empty-queue.sqlite',
-    });
+  it('throws if queue is empty', async () => {
+    expect.assertions(1);
+
+    try {
+      await run({
+        resourceDir,
+        queueFile: './fixtures/empty-queue.sqlite',
+      });
+    } catch (err) {
+      const error = err as Error;
+      expect(error.message).toEqual('Cannot run: the queue is empty');
+    }
   });
 });
 

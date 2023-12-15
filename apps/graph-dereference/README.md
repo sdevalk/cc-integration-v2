@@ -21,6 +21,8 @@ Create or update a graph by dereferencing IRIs
 
 ##### Upload graph files to data platform
 
+    cp ./fixtures/empty-queue.sqlite ./tmp/empty-queue.sqlite
+
     ./dist/cli.js upload \
       --resource-dir "./tmp/dbpedia" \
       --queue-file ./fixtures/empty-queue.sqlite \
