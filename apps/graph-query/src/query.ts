@@ -28,8 +28,10 @@ export async function run(options: RunOptions) {
   const logger = getLogger();
   const queue = await Queue.new({path: opts.queueFile});
 
+  // Valid state - do not throw an error
   if (await queue.isEmpty()) {
-    throw new Error('Cannot run: the queue is empty');
+    logger.info('Cannot run: the queue is empty');
+    return;
   }
 
   const filestore = new Filestore({dir: opts.resourceDir});

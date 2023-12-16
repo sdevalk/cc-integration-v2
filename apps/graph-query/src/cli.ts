@@ -36,12 +36,7 @@ cli
     default: 1000,
   })
   .action(async (options: QueryRunOptions) => {
-    import('./query.js').then(action =>
-      action.run(options).catch(err => {
-        console.error(err);
-        process.exitCode = 1;
-      })
-    );
+    import('./query.js').then(action => action.run(options));
   });
 
 cli.help();

@@ -18,20 +18,13 @@ beforeEach(async () => {
 });
 
 describe('run', () => {
-  it('throws if queue is empty', async () => {
-    expect.assertions(1);
-
-    try {
-      await run({
-        resourceDir,
-        queueFile: './fixtures/empty-queue.sqlite',
-        endpointUrl: 'https://vocab.getty.edu/sparql',
-        queryFile,
-      });
-    } catch (err) {
-      const error = err as Error;
-      expect(error.message).toEqual('Cannot run: the queue is empty');
-    }
+  it('runs if queue is empty', async () => {
+    await run({
+      resourceDir,
+      queueFile: './fixtures/empty-queue.sqlite',
+      endpointUrl: 'https://vocab.getty.edu/sparql',
+      queryFile,
+    });
   });
 });
 
