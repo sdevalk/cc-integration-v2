@@ -23,7 +23,7 @@ jobs:
             --number-of-iris-per-request 10 \
             --wait-between-requests 500 \
             --resource-dir $RUNNER_TEMP/resources \
-            --queue-file $RUNNER_TEMP/queue.sqlite \
+            --queue-file $RUNNER_TEMP/queue.sqlite
 
   graph-dereference:
     runs-on: ubuntu-latest

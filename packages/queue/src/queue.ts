@@ -1,8 +1,8 @@
 import {Database, NewItem} from './types.js';
 import SQLite from 'better-sqlite3';
 import {FileMigrationProvider, Migrator, Kysely, SqliteDialect} from 'kysely';
-import fs from 'node:fs/promises';
-import path from 'node:path';
+import fs, {mkdir} from 'node:fs/promises';
+import path, {join, dirname} from 'node:path';
 import {URL, fileURLToPath} from 'node:url';
 import {z} from 'zod';
 
@@ -24,11 +24,9 @@ export class Queue {
   private readonly db: Kysely<Database>;
 
   private constructor(options: ConstructorOptions) {
-    const opts = constructorOptionsSchema.parse(options);
-
     const dialect = new SqliteDialect({
       database: async () => {
-        const db = new SQLite(opts.path);
+        const db = new SQLite(options.path);
         db.pragma('journal_mode = WAL');
         return db;
       },
@@ -39,7 +37,7 @@ export class Queue {
 
   private async runMigrations() {
     const dirname = fileURLToPath(new URL('.', import.meta.url));
-    const migrationFolder = path.join(dirname, 'migrations');
+    const migrationFolder = join(dirname, 'migrations');
     const provider = new FileMigrationProvider({
       fs,
       path,
@@ -55,7 +53,13 @@ export class Queue {
   }
 
   static async new(options: ConstructorOptions) {
-    const queue = new Queue(options);
+    const opts = constructorOptionsSchema.parse(options);
+
+    // Make sure the directory of the file exists - SQLite will not create it
+    const parentDir = dirname(opts.path);
+    await mkdir(parentDir, {recursive: true});
+
+    const queue = new Queue(opts);
     await queue.runMigrations();
 
     return queue;
