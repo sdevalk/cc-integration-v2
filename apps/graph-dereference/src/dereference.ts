@@ -41,7 +41,7 @@ export async function run(options: RunOptions) {
 
   const saveQueue = fastq.promise(save, opts.numberOfConcurrentRequests);
   const items = await queue.getAll({limit: opts.batchSize});
-  logger.info(`Generating ${items.length} resources`);
+  logger.info(`Processing ${items.length} items from the queue`);
 
   for (const item of items) {
     saveQueue.push(item).catch(err => {

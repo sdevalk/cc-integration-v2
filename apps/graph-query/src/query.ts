@@ -42,7 +42,7 @@ export async function run(options: RunOptions) {
   generator.on('warning', (err: Error) => logger.warn(err));
 
   const items = await queue.getAll({limit: opts.batchSize});
-  logger.info(`Generating ${items.length} resources`);
+  logger.info(`Processing ${items.length} items from the queue`);
 
   const progress = new ProgressLogger({
     logger,

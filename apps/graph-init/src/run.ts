@@ -23,12 +23,13 @@ export async function run(options: RunOptions) {
 
   const startTime = Date.now();
   const logger = getLogger();
-  const filestore = new Filestore({dir: opts.resourceDir});
   const queue = await Queue.new({path: opts.queueFile});
 
   if (!(await queue.isEmpty())) {
     throw new Error('Cannot run: the queue is not empty');
   }
+
+  // TBD: add check by callback - should this function run?
 
   logger.info(`Collecting IRIs from SPARQL endpoint "${opts.endpointUrl}"`);
 
@@ -64,6 +65,7 @@ export async function run(options: RunOptions) {
   // Compare the queued IRIs with those previously stored on file,
   // removing resources that have become obsolete
   const items = await queue.getAll();
+  const filestore = new Filestore({dir: opts.resourceDir});
   const hashesOfCurrentIris = items.map(item =>
     filestore.createHashFromIri(item.iri)
   );
