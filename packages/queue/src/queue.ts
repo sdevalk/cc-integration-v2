@@ -1,9 +1,9 @@
+import {ESMFileMigrationProvider} from './provider.js';
 import {Database, NewItem} from './types.js';
 import SQLite from 'better-sqlite3';
-import {FileMigrationProvider, Migrator, Kysely, SqliteDialect} from 'kysely';
-import fs, {mkdir} from 'node:fs/promises';
-import path, {join, dirname} from 'node:path';
-import {URL, fileURLToPath} from 'node:url';
+import {Migrator, Kysely, SqliteDialect} from 'kysely';
+import {mkdir} from 'node:fs/promises';
+import {dirname} from 'node:path';
 import {z} from 'zod';
 
 export const constructorOptionsSchema = z.object({
@@ -28,6 +28,7 @@ export class Queue {
       database: async () => {
         const db = new SQLite(options.path);
         db.pragma('journal_mode = WAL');
+        db.pragma('auto_vacuum = FULL'); // Shrink database when data is deleted
         return db;
       },
     });
@@ -36,14 +37,7 @@ export class Queue {
   }
 
   private async runMigrations() {
-    const dirname = fileURLToPath(new URL('.', import.meta.url));
-    const migrationFolder = join(dirname, 'migrations');
-    const provider = new FileMigrationProvider({
-      fs,
-      path,
-      migrationFolder,
-    });
-
+    const provider = new ESMFileMigrationProvider('./migrations');
     const migrator = new Migrator({db: this.db, provider});
     const {error} = await migrator.migrateToLatest();
 

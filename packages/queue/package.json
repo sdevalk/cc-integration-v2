@@ -7,8 +7,10 @@
   "exports": "./dist/index.js",
   "scripts": {
     "build": "tsup",
+    "pretest": "npm run build && cp -r ./dist/migrations/*.js ./src/migrations",
     "test": "vitest --coverage",
-    "test:once": "vitest --run --passWithNoTests"
+    "posttest": "rm -rf ./src/migrations/*.js",
+    "test:once": "npm run build && cp -r ./dist/migrations/*.js ./src/migrations && vitest --run && rm -rf ./src/migrations/*.js"
   },
   "dependencies": {
     "better-sqlite3": "9.2.2",
