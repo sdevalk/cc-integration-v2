@@ -1,0 +1,8 @@
+<http://vocab.getty.edu/aat/300224439> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://vocab.getty.edu/aat/300224439> <http://www.w3.org/2004/02/skos/core#prefLabel> "definition"@en .
+<http://vocab.getty.edu/aat/300224439> <http://www.w3.org/2004/02/skos/core#prefLabel> "定義"@zh-hant .
+<http://vocab.getty.edu/aat/300224439> <http://www.w3.org/2004/02/skos/core#prefLabel> "ding yi"@zh-latn-pinyin-x-hanyu .
+<http://vocab.getty.edu/aat/300224439> <http://www.w3.org/2004/02/skos/core#prefLabel> "dìng yì"@zh-latn-pinyin-x-notone .
+<http://vocab.getty.edu/aat/300224439> <http://www.w3.org/2004/02/skos/core#prefLabel> "ting i"@zh-latn-wadegile .
+<http://vocab.getty.edu/aat/300224439> <http://www.w3.org/2004/02/skos/core#prefLabel> "definiëren"@nl .
+<http://vocab.getty.edu/aat/300224439> <http://www.w3.org/2004/02/skos/core#prefLabel> "definir"@es .

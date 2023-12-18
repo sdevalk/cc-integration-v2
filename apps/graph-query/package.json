@@ -12,9 +12,8 @@
   },
   "dependencies": {
     "@colonial-collections/common": "*",
-    "@colonial-collections/filestore": "*",
     "@colonial-collections/queue": "*",
-    "@colonial-collections/sparql-generator": "*",
+    "@colonial-collections/sparql-storer": "*",
     "@colonial-collections/triplydb": "*",
     "cac": "6.7.14",
     "fastq": "1.15.0",
