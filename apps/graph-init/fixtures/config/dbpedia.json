@@ -1,0 +1,8 @@
+{
+  "endpointUrl": "https://dbpedia.org/sparql",
+  "queryFile": "./fixtures/iterate-1.rq",
+  "waitBetweenRequests": 2,
+  "numberOfIrisPerRequest": 2,
+  "resourceDir": "./tmp/dbpedia",
+  "queueFile": "./tmp/queue.sqlite"
+}

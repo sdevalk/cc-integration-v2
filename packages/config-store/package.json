@@ -1,0 +1,31 @@
+{
+  "name": "@colonial-collections/config-store",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "exports": "./dist/index.js",
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest --coverage",
+    "test:once": "vitest --run"
+  },
+  "dependencies": {
+    "confidence": "5.0.1",
+    "strip-json-comments": "5.0.1"
+  },
+  "devDependencies": {
+    "@colonial-collections/tsconfig": "*",
+    "@types/confidence": "1.4.32"
+  },
+  "tsup": {
+    "entry": [
+      "src/index.ts"
+    ],
+    "format": "esm",
+    "splitting": false,
+    "sourcemap": false,
+    "clean": true,
+    "dts": true
+  }
+}

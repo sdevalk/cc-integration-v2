@@ -1,0 +1,5 @@
+{
+  "this": {
+    "is": /* comment1 */ "a test" // comment2
+  }
+}
