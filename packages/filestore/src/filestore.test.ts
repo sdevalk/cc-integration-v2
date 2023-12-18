@@ -8,10 +8,19 @@ import {beforeEach, describe, expect, it} from 'vitest';
 const dereferencer = rdfDereferencer.default ?? rdfDereferencer;
 
 const dir = './tmp/';
-const filestore = new Filestore({dir});
+let filestore: Filestore;
+
+async function getQuadStreamFromFile(path: string) {
+  const {data} = await dereferencer.dereference(path, {
+    localFiles: true,
+  });
+
+  return data;
+}
 
 beforeEach(async () => {
   await rimraf(dir);
+  filestore = new Filestore({dir});
 });
 
 describe('createHashFromIri', () => {
@@ -33,44 +42,36 @@ describe('createPathFromIri', () => {
 });
 
 describe('deleteByIri', () => {
-  const filestore = new Filestore({dir: './tmp/'});
   const iri = 'http://localhost/resource';
-
-  beforeEach(async () => {
-    const {data} = await dereferencer.dereference('./fixtures/resource.ttl', {
-      localFiles: true,
-    });
-
-    await filestore.save({iri, quadStream: data});
-  });
 
   it('does not throw if a resource does not exist', async () => {
     await filestore.deleteByIri('http://localhost/doesnotexist');
   });
 
   it('deletes a resource', async () => {
-    await filestore.deleteByIri(iri);
+    const quadStream = await getQuadStreamFromFile('./fixtures/resource.ttl');
+    await filestore.save({iri, quadStream});
 
     const path = filestore.createPathFromIri(iri);
+    expect(existsSync(path)).toBe(true);
+
+    await filestore.deleteByIri(iri);
+
     expect(existsSync(path)).toBe(false);
   });
 });
 
 describe('deleteIfMatches', () => {
-  const filestore = new Filestore({dir: './tmp/'});
-  const iri1 = 'http://localhost/resource1';
-  const iri2 = 'http://localhost/resource2';
+  it('deletes resources that match the condition', async () => {
+    const iri1 = 'http://localhost/resource1';
+    const iri2 = 'http://localhost/resource2';
 
-  beforeEach(async () => {
-    const {data} = await dereferencer.dereference('./fixtures/resource.ttl', {
-      localFiles: true,
-    });
+    const quadStream1 = await getQuadStreamFromFile('./fixtures/resource.ttl');
+    const quadStream2 = await getQuadStreamFromFile('./fixtures/resource.ttl');
 
-    await filestore.save({iri: iri1, quadStream: data});
-    await filestore.save({iri: iri2, quadStream: data});
-  });
+    await filestore.save({iri: iri1, quadStream: quadStream1});
+    await filestore.save({iri: iri2, quadStream: quadStream2});
 
-  it('deletes resources', async () => {
     const hashesOfIrisThatMustBeDeleted = [filestore.createHashFromIri(iri1)];
     const matchFn = async (hashOfIri: string) =>
       hashesOfIrisThatMustBeDeleted.includes(hashOfIri);
@@ -88,17 +89,25 @@ describe('deleteIfMatches', () => {
 });
 
 describe('save', () => {
-  const filestore = new Filestore({dir: './tmp/'});
   const iri = 'http://localhost/resource';
 
   it('saves a resource', async () => {
-    const {data} = await dereferencer.dereference('./fixtures/resource.ttl', {
-      localFiles: true,
-    });
+    const quadStream = await getQuadStreamFromFile('./fixtures/resource.ttl');
 
-    await filestore.save({iri, quadStream: data});
+    await filestore.save({iri, quadStream});
 
     const path = filestore.createPathFromIri(iri);
     expect(existsSync(path)).toBe(true);
+  });
+
+  it('deletes a resource if resource is empty', async () => {
+    const quadStream = await getQuadStreamFromFile(
+      './fixtures/empty-resource.ttl'
+    );
+
+    await filestore.save({iri, quadStream});
+
+    const path = filestore.createPathFromIri(iri);
+    expect(existsSync(path)).toBe(false);
   });
 });

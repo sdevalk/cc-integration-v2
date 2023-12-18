@@ -1,7 +1,7 @@
 import {md5} from './md5.js';
 import {globStream} from 'glob';
 import {createWriteStream} from 'node:fs';
-import {mkdir, unlink} from 'node:fs/promises';
+import {mkdir, stat, unlink} from 'node:fs/promises';
 import {basename, dirname, join, resolve} from 'node:path';
 import {pipeline} from 'node:stream/promises';
 import {Stream} from '@rdfjs/types';
@@ -21,15 +21,17 @@ const iriSchema = z.string().url();
 const pathSchema = z.string();
 const matchFnSchema = z.function();
 
-export const deleteOptionsSchema = z.object({
+const deleteOptionsSchema = z.object({
   iri: z.string().url(),
 });
 
 export type DeleteOptions = z.infer<typeof deleteOptionsSchema>;
 
-export const saveOptionsSchema = z.object({
+const saveOptionsSchema = z.object({
   iri: z.string().url(),
-  quadStream: z.any(),
+  quadStream: z.any().refine(val => val !== undefined, {
+    message: 'quadStream must be defined',
+  }),
 });
 
 export type SaveOptions = {
@@ -124,5 +126,11 @@ export class Filestore {
     const writeStream = createWriteStream(path); // Overwrite an existing file, if any
     const dataStream = serializer.serialize(opts.quadStream, {path});
     await pipeline(dataStream, writeStream);
+
+    // Delete empty file if the quad stream is empty
+    const stats = await stat(path);
+    if (stats.size === 0) {
+      await this.deleteByPath(path);
+    }
   }
 }
