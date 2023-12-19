@@ -1,4 +1,4 @@
-import {SparqlStorer} from './storer.js';
+import {DereferenceStorer} from './storer.js';
 import {Filestore} from '@colonial-collections/filestore';
 import {Queue} from '@colonial-collections/queue';
 import {existsSync} from 'node:fs';
@@ -12,20 +12,6 @@ const tmpDir = './tmp';
 const resourceDir = join(tmpDir, 'resources');
 const queueFile = join(tmpDir, 'queue.sqlite');
 const filestore = new Filestore({dir: resourceDir});
-const query = `
-  PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-  CONSTRUCT {
-    ?this a skos:Concept ;
-      skos:prefLabel ?prefLabel ;
-      skos:altLabel ?altLabel .
-  }
-  WHERE {
-    BIND(?_iri AS ?this)
-    ?this a skos:Concept ;
-      skos:prefLabel ?prefLabel .
-    OPTIONAL { ?this skos:altLabel ?altlabel }
-  }
-`;
 
 beforeEach(async () => {
   await rimraf(tmpDir);
@@ -43,11 +29,12 @@ describe('run', () => {
     await queue.push({iri: iri1});
     await queue.push({iri: iri2});
 
-    const storer = new SparqlStorer({
+    const storer = new DereferenceStorer({
       logger: pino(),
       resourceDir,
-      endpointUrl: 'https://vocab.getty.edu/sparql',
-      query,
+      headers: {
+        Accept: 'text/turtle', // Getty does not provide correct link headers for JSON
+      },
     });
 
     let numberOfEmits = 0;
@@ -79,11 +66,12 @@ describe('run', () => {
     await queue.push({iri: iri1});
     await queue.push({iri: iri2});
 
-    const storer = new SparqlStorer({
+    const storer = new DereferenceStorer({
       logger: pino(),
       resourceDir,
-      endpointUrl: 'https://vocab.getty.edu/sparql',
-      query,
+      headers: {
+        Accept: 'text/turtle', // Getty does not provide correct link headers for JSON
+      },
     });
 
     let numberOfEmits = 0;
@@ -115,11 +103,12 @@ describe('run', () => {
     await queue.push({iri: iri2});
     await queue.push({iri: iri3});
 
-    const storer = new SparqlStorer({
+    const storer = new DereferenceStorer({
       logger: pino(),
       resourceDir,
-      endpointUrl: 'https://vocab.getty.edu/sparql',
-      query,
+      headers: {
+        Accept: 'text/turtle', // Getty does not provide correct link headers for JSON
+      },
     });
 
     await storer.run({queue, batchSize: 1});

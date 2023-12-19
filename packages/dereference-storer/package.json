@@ -1,10 +1,10 @@
 {
-  "name": "@colonial-collections/graph-dereference",
+  "name": "@colonial-collections/dereference-storer",
   "version": "1.0.0",
   "type": "module",
   "private": true,
   "license": "MIT",
-  "exports": "./dist/cli.js",
+  "exports": "./dist/index.js",
   "scripts": {
     "build": "tsup",
     "test": "vitest --coverage",
@@ -12,20 +12,19 @@
   },
   "dependencies": {
     "@colonial-collections/common": "*",
-    "@colonial-collections/dereference-storer": "*",
+    "@colonial-collections/dereferencer": "*",
+    "@colonial-collections/filestore": "*",
     "@colonial-collections/queue": "*",
-    "@colonial-collections/triplydb": "*",
-    "cac": "6.7.14",
     "fastq": "1.15.0",
-    "pretty-ms": "8.0.0",
     "zod": "3.22.4"
   },
   "devDependencies": {
-    "@colonial-collections/tsconfig": "*"
+    "@colonial-collections/tsconfig": "*",
+    "pino": "8.16.2"
   },
   "tsup": {
     "entry": [
-      "src/cli.ts"
+      "src/index.ts"
     ],
     "format": "esm",
     "splitting": false,

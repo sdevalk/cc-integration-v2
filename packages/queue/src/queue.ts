@@ -12,7 +12,7 @@ export const constructorOptionsSchema = z.object({
 
 export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;
 
-export const getAllOptionsSchema = z
+const getAllOptionsSchema = z
   .object({
     limit: z.number().int().min(1).optional(),
   })

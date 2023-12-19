@@ -1,19 +1,22 @@
-import {upload} from './upload.js';
 import {getLogger, ProgressLogger} from '@colonial-collections/common';
+import {DereferenceStorer} from '@colonial-collections/dereference-storer';
 import {Queue} from '@colonial-collections/queue';
-import {SparqlStorer} from '@colonial-collections/sparql-storer';
-import {readFile} from 'node:fs/promises';
 import PrettyMilliseconds from 'pretty-ms';
 import {z} from 'zod';
 
 const runOptionsSchema = z.object({
   resourceDir: z.string(),
   queueFile: z.string(),
-  endpointUrl: z.string(),
-  queryFile: z.string(),
+  credentials: z
+    .object({
+      type: z.literal('basic-auth'),
+      username: z.string(),
+      password: z.string(),
+    })
+    .optional(),
+  headers: z.record(z.string(), z.string()).optional(),
   numberOfConcurrentRequests: z.number().min(1).default(1),
   waitBetweenRequests: z.number().min(0).optional(),
-  timeoutPerRequest: z.number().min(0).default(60000),
   batchSize: z.number().min(1).default(1000),
   triplydbInstanceUrl: z.string(),
   triplydbApiToken: z.string(),
@@ -40,12 +43,11 @@ export async function run(options: RunOptions) {
     return;
   }
 
-  const query = await readFile(opts.queryFile, 'utf-8');
-  const storer = new SparqlStorer({
+  const storer = new DereferenceStorer({
     logger,
     resourceDir: opts.resourceDir,
-    endpointUrl: opts.endpointUrl,
-    query,
+    credentials: opts.credentials,
+    headers: opts.headers,
   });
 
   const progress = new ProgressLogger({logger});
@@ -69,12 +71,6 @@ export async function run(options: RunOptions) {
 
   const queueSize = await queue.size();
   logger.info(`There are ${queueSize} items left in the queue`);
-
-  // Only allowed to upload the RDF resources if all items in the queue have been processed.
-  // This action fails if another process is already uploading resources to the data platform
-  if (queueSize === 0) {
-    await upload(opts);
-  }
 
   const finishTime = Date.now();
   const runtime = finishTime - startTime;
