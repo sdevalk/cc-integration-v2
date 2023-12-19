@@ -127,7 +127,7 @@ export class Filestore {
     const dataStream = serializer.serialize(opts.quadStream, {path});
     await pipeline(dataStream, writeStream);
 
-    // Delete empty file if the quad stream is empty
+    // Delete empty file - the quad stream was probably empty
     const stats = await stat(path);
     if (stats.size === 0) {
       await this.deleteByPath(path);

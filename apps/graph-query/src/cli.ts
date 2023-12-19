@@ -13,28 +13,17 @@ cli
   .option('--query-file <string>', 'File with a SPARQL query')
   .option(
     '--number-of-concurrent-requests [number]',
-    'Number of concurrent requests',
-    {
-      default: 1,
-    }
+    'Number of concurrent requests'
   )
   .option(
     '--wait-between-requests [number]',
-    'Wait between requests, in milliseconds',
-    {
-      default: 0,
-    }
+    'Wait between requests, in milliseconds'
   )
   .option(
     '--timeout-per-request [number]',
-    'Timeout per request, in milliseconds',
-    {
-      default: 60000,
-    }
+    'Timeout per request, in milliseconds'
   )
-  .option('--batch-size [number]', 'Number of IRIs from the queue to process', {
-    default: 1000,
-  })
+  .option('--batch-size [number]', 'Number of IRIs from the queue to process')
   .option('--triplydb-instance-url <string>', 'TriplyDB instance URL')
   .option('--triplydb-api-token <string>', 'TriplyDB API token')
   .option('--triplydb-account <string>', 'TriplyDB account')
