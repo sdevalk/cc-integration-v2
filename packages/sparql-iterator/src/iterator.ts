@@ -42,7 +42,6 @@ export class SparqlIterator extends EventEmitter {
   }
 
   private validateQuery(query: string) {
-    // Some sanity checks - can be optimized
     // TBD: use sparqljs for validation?
     const bindings = ['?this', '?_limit', '?_offset']; // Basil notation
     const hasBindings = bindings.every(
