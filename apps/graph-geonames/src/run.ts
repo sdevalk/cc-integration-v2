@@ -1,5 +1,6 @@
 import {initialize} from './initialize.js';
 import {finalize} from './finalize.js';
+import {query} from './query.js';
 import {getLogger} from '@colonial-collections/common';
 import type {Queue} from '@colonial-collections/queue';
 import type {pino} from 'pino';
@@ -20,7 +21,7 @@ export type RunOptions = z.input<typeof runOptionsSchema>;
 export async function run(options: RunOptions) {
   const opts = runOptionsSchema.parse(options);
 
-  const machine = setup({
+  const workflow = setup({
     // https://stately.ai/docs/input#input-and-typescript
     types: {} as {
       input: RunOptions;
@@ -28,6 +29,7 @@ export async function run(options: RunOptions) {
         startTime: number;
         logger: pino.Logger;
         queue: Queue | undefined;
+        queueIsEmpty: boolean | undefined;
       };
       // https://stately.ai/docs/actors#actors-and-typescript
       // children: {} as {
@@ -38,6 +40,7 @@ export async function run(options: RunOptions) {
     actors: {
       initialize,
       finalize,
+      query,
     },
   }).createMachine({
     id: 'updateGraph',
@@ -47,6 +50,7 @@ export async function run(options: RunOptions) {
       startTime: Date.now(),
       logger: getLogger(),
       queue: undefined,
+      queueIsEmpty: undefined,
       endpointUrl: input.endpointUrl,
       queryFile: input.queryFile,
       waitBetweenRequests: input.waitBetweenRequests,
@@ -64,13 +68,36 @@ export async function run(options: RunOptions) {
             startTime: context.startTime,
             queueFile: context.queueFile,
           }),
-          onDone: {
-            target: 'finalize',
-            // https://stately.ai/docs/context#updating-context-with-assign
-            actions: assign({
-              queue: ({event}) => event.output,
-            }),
-          },
+          // https://github.com/statelyai/xstate/blob/main/examples/workflow-credit-check/main.ts#L46-L61
+          onDone: [
+            {
+              target: 'finalize',
+              // https://stately.ai/docs/context#updating-context-with-assign
+              actions: assign({
+                queue: ({event}) => event.output.queue,
+                queueIsEmpty: ({event}) => event.output.isEmpty,
+              }),
+              guard: ({context, event}) => {
+                const queueIsEmpty = event.output.isEmpty;
+                return !queueIsEmpty;
+              },
+            },
+            {
+              target: 'query',
+            },
+          ],
+        },
+      },
+      query: {
+        invoke: {
+          id: 'query',
+          src: 'query',
+          input: ({context}) => ({
+            logger: context.logger,
+            startTime: context.startTime,
+            queue: context.queue,
+          }),
+          onDone: 'finalize',
         },
       },
       finalize: {
@@ -80,7 +107,6 @@ export async function run(options: RunOptions) {
           input: ({context}) => ({
             logger: context.logger,
             startTime: context.startTime,
-            queue: context.queue,
           }),
           onDone: 'done',
         },
@@ -92,9 +118,5 @@ export async function run(options: RunOptions) {
   });
 
   // https://stately.ai/docs/input#initial-event-input
-  const mainActor = createActor(machine, {
-    input: opts,
-  });
-
-  mainActor.start();
+  createActor(workflow, {input: opts}).start();
 }
