@@ -1,8 +1,7 @@
-import {initialize} from './initialize.js';
-import {finalize} from './finalize.js';
-import {query} from './query.js';
+import {checkQueue, finalize, iterate} from './actors.js';
+import {generate} from './generate.js';
 import {getLogger} from '@colonial-collections/common';
-import type {Queue} from '@colonial-collections/queue';
+import {Queue} from '@colonial-collections/queue';
 import type {pino} from 'pino';
 import {assign, createActor, setup} from 'xstate';
 import {z} from 'zod';
@@ -21,36 +20,32 @@ export type RunOptions = z.input<typeof runOptionsSchema>;
 export async function run(options: RunOptions) {
   const opts = runOptionsSchema.parse(options);
 
+  const queue = await Queue.new({path: opts.queueFile});
+
   const workflow = setup({
-    // https://stately.ai/docs/input#input-and-typescript
     types: {} as {
       input: RunOptions;
       context: RunOptions & {
         startTime: number;
         logger: pino.Logger;
-        queue: Queue | undefined;
-        queueIsEmpty: boolean | undefined;
+        queue: Queue;
+        queueSize: number;
       };
-      // https://stately.ai/docs/actors#actors-and-typescript
-      // children: {} as {
-      //   initialize: 'initialize';
-      //   finalize: 'finalize';
-      // };
     },
     actors: {
-      initialize,
+      checkQueue,
+      generate,
+      iterate,
       finalize,
-      query,
     },
   }).createMachine({
-    id: 'updateGraph',
-    initial: 'initialize',
-    // https://stately.ai/docs/context#cheatsheet-input
+    id: 'keepGraphUpToDate',
+    initial: 'checkQueue',
     context: ({input}) => ({
       startTime: Date.now(),
       logger: getLogger(),
-      queue: undefined,
-      queueIsEmpty: undefined,
+      queue,
+      queueSize: 0,
       endpointUrl: input.endpointUrl,
       queryFile: input.queryFile,
       waitBetweenRequests: input.waitBetweenRequests,
@@ -59,44 +54,45 @@ export async function run(options: RunOptions) {
       queueFile: input.queueFile,
     }),
     states: {
-      initialize: {
+      checkQueue: {
         invoke: {
-          id: 'initialize',
-          src: 'initialize',
-          // https://stately.ai/docs/invoke#input-from-a-function
-          input: ({context}) => ({
-            startTime: context.startTime,
-            queueFile: context.queueFile,
-          }),
-          // https://github.com/statelyai/xstate/blob/main/examples/workflow-credit-check/main.ts#L46-L61
-          onDone: [
-            {
-              target: 'finalize',
-              // https://stately.ai/docs/context#updating-context-with-assign
-              actions: assign({
-                queue: ({event}) => event.output.queue,
-                queueIsEmpty: ({event}) => event.output.isEmpty,
-              }),
-              guard: ({context, event}) => {
-                const queueIsEmpty = event.output.isEmpty;
-                return !queueIsEmpty;
-              },
-            },
-            {
-              target: 'query',
-            },
-          ],
+          id: 'checkQueue',
+          src: 'checkQueue',
+          input: ({context}) => context,
+          onDone: {
+            target: 'evaluateQueue',
+            actions: assign({
+              queueSize: ({event}) => event.output,
+            }),
+          },
         },
       },
-      query: {
+      evaluateQueue: {
+        always: [
+          // If the queue is empty: fill it by iterating
+          {
+            target: 'iterate',
+            guard: ({context}) => context.queueSize === 0,
+          },
+          // If the queue is not empty: generate resources in the queue
+          {
+            target: 'generate',
+          },
+        ],
+      },
+      iterate: {
         invoke: {
-          id: 'query',
-          src: 'query',
-          input: ({context}) => ({
-            logger: context.logger,
-            startTime: context.startTime,
-            queue: context.queue,
-          }),
+          id: 'iterate',
+          src: 'iterate',
+          input: ({context}) => context,
+          onDone: 'finalize',
+        },
+      },
+      generate: {
+        invoke: {
+          id: 'generate',
+          src: 'generate',
+          input: ({context}) => context,
           onDone: 'finalize',
         },
       },
@@ -104,10 +100,7 @@ export async function run(options: RunOptions) {
         invoke: {
           id: 'finalize',
           src: 'finalize',
-          input: ({context}) => ({
-            logger: context.logger,
-            startTime: context.startTime,
-          }),
+          input: ({context}) => context,
           onDone: 'done',
         },
       },
@@ -117,6 +110,5 @@ export async function run(options: RunOptions) {
     },
   });
 
-  // https://stately.ai/docs/input#initial-event-input
   createActor(workflow, {input: opts}).start();
 }

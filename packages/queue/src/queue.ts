@@ -23,7 +23,7 @@ export type GetAllOptions = z.input<typeof getAllOptionsSchema>;
 export class Queue {
   private readonly db: Kysely<Database>;
 
-  private constructor(options: ConstructorOptions) {
+  constructor(options: ConstructorOptions) {
     const dialect = new SqliteDialect({
       database: async () => {
         const db = new SQLite(options.path);

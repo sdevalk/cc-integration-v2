@@ -1,8 +1,8 @@
 import type {pino} from 'pino';
 import {fromPromise} from 'xstate';
 
-export const query = fromPromise(
+export const generate = fromPromise(
   async ({input}: {input: {startTime: number; logger: pino.Logger}}) => {
-    console.log('QUERY');
+    console.log('GENERATE');
   }
 );
