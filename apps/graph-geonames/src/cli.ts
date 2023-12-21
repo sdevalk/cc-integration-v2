@@ -8,7 +8,8 @@ const cli = cac();
 cli
   .command('run', 'Collect and queue IRIs from a SPARQL endpoint')
   .option('--endpoint-url <string>', 'SPARQL endpoint URL')
-  .option('--query-file <string>', 'File with a SPARQL query')
+  .option('--iterate-query-file <string>', 'File with a SPARQL query')
+  .option('--generate-query-file <string>', 'File with a SPARQL query')
   .option(
     '--wait-between-requests [number]',
     'Wait between requests, in milliseconds',

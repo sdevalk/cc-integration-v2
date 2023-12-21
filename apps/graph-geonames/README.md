@@ -12,7 +12,8 @@ Initialize the creating or updating of a graph
 
     ./dist/cli.js run \
       --endpoint-url "https://dbpedia.org/sparql" \
-      --query-file ./fixtures/iterate.rq \
+      --iterate-query-file ./fixtures/iterate.rq \
+      --generate-query-file ./fixtures/generate.rq \
       --number-of-iris-per-request 2 \
       --wait-between-requests 100 \
       --resource-dir ./tmp/dbpedia \

@@ -17,7 +17,8 @@ describe('run', () => {
   it('runs', async () => {
     await run({
       endpointUrl: 'https://dbpedia.org/sparql',
-      queryFile: './fixtures/iterate.rq',
+      iterateQueryFile: './fixtures/iterate.rq',
+      generateQueryFile: './fixtures/generate.rq',
       resourceDir,
       queueFile,
     });

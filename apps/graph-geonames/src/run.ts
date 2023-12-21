@@ -1,5 +1,4 @@
-import {checkQueue, finalize, iterate} from './actors.js';
-import {generate} from './generate.js';
+import {checkQueue, finalize, generate, iterate} from './actors.js';
 import {getLogger} from '@colonial-collections/common';
 import {Queue} from '@colonial-collections/queue';
 import type {pino} from 'pino';
@@ -8,7 +7,8 @@ import {z} from 'zod';
 
 const runOptionsSchema = z.object({
   endpointUrl: z.string(),
-  queryFile: z.string(),
+  iterateQueryFile: z.string(),
+  generateQueryFile: z.string(),
   waitBetweenRequests: z.number().optional(),
   numberOfIrisPerRequest: z.number().optional(),
   resourceDir: z.string(),
@@ -47,7 +47,8 @@ export async function run(options: RunOptions) {
       queue,
       queueSize: 0,
       endpointUrl: input.endpointUrl,
-      queryFile: input.queryFile,
+      iterateQueryFile: input.iterateQueryFile,
+      generateQueryFile: input.generateQueryFile,
       waitBetweenRequests: input.waitBetweenRequests,
       numberOfIrisPerRequest: input.numberOfIrisPerRequest,
       resourceDir: input.resourceDir,
