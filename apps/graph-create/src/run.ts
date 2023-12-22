@@ -85,15 +85,15 @@ export async function run(input: Input) {
       evaluateQueue: {
         always: [
           {
-            target: 'getIrisOfResources',
+            target: 'initUpdateOfResources',
             guard: ({context}) => context.queueSize === 0,
           },
           {
-            target: 'updateResourcesOfIris',
+            target: 'updateResources',
           },
         ],
       },
-      getIrisOfResources: {
+      initUpdateOfResources: {
         initial: 'iterate',
         states: {
           iterate: {
@@ -114,7 +114,7 @@ export async function run(input: Input) {
           },
         },
       },
-      updateResourcesOfIris: {
+      updateResources: {
         initial: 'generate',
         states: {
           generate: {
