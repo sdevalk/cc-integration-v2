@@ -11,7 +11,6 @@ const constructorOptionsSchema = z.object({
 export type ConstructorOptions = z.infer<typeof constructorOptionsSchema>;
 
 const logOptionsSchema = z.object({
-  startTime: z.number().int(),
   totalNumberOfResources: z.number().int(),
   numberOfProcessedResources: z.number().int(),
 });
@@ -20,12 +19,14 @@ export type LogOptions = z.infer<typeof logOptionsSchema>;
 
 export class ProgressLogger {
   private readonly logger: pino.Logger;
+  private readonly startTime: number;
   private prevProgressPercentage = -1;
 
   constructor(options: ConstructorOptions) {
     const opts = constructorOptionsSchema.parse(options);
 
     this.logger = opts.logger;
+    this.startTime = Date.now();
   }
 
   log(options: LogOptions) {
@@ -41,7 +42,7 @@ export class ProgressLogger {
     }
 
     const intermediateTime = Date.now();
-    const runtime = intermediateTime - opts.startTime;
+    const runtime = intermediateTime - this.startTime;
 
     this.logger.info(
       `Generated ${currentProgressPercentage}% of ${

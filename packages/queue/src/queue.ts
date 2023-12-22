@@ -23,9 +23,12 @@ export type GetAllOptions = z.input<typeof getAllOptionsSchema>;
 export class Queue {
   private readonly db: Kysely<Database>;
 
-  private constructor(options: ConstructorOptions) {
+  constructor(options: ConstructorOptions) {
     const dialect = new SqliteDialect({
       database: async () => {
+        // Make sure the directory of the file exists - SQLite will not create it
+        await mkdir(dirname(options.path), {recursive: true});
+
         const db = new SQLite(options.path);
         db.pragma('journal_mode = WAL');
         db.pragma('auto_vacuum = FULL'); // Shrink database when data is deleted
@@ -48,10 +51,6 @@ export class Queue {
 
   static async new(options: ConstructorOptions) {
     const opts = constructorOptionsSchema.parse(options);
-
-    // Make sure the directory of the file exists - SQLite will not create it
-    const parentDir = dirname(opts.path);
-    await mkdir(parentDir, {recursive: true});
 
     const queue = new Queue(opts);
     await queue.runMigrations();
@@ -96,11 +95,7 @@ export class Queue {
   }
 
   async isEmpty() {
-    const record = await this.db
-      .selectFrom('queue')
-      .select(eb => eb.fn.count<number>('id').as('count'))
-      .executeTakeFirstOrThrow();
-
-    return record.count === 0;
+    const size = await this.size();
+    return size === 0;
   }
 }

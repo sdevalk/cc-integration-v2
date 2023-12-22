@@ -1,6 +1,6 @@
 import {Dereferencer} from '@colonial-collections/dereferencer';
 import {Filestore} from '@colonial-collections/filestore';
-import {Item} from '@colonial-collections/queue';
+import {Item, Queue} from '@colonial-collections/queue';
 import EventEmitter from 'events';
 import fastq from 'fastq';
 import {setTimeout} from 'node:timers/promises';
@@ -25,9 +25,7 @@ const constructorOptionsSchema = z.object({
 export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;
 
 const runOptionsSchema = z.object({
-  queue: z.any().refine(val => val !== undefined, {
-    message: 'queue must be defined',
-  }),
+  queue: z.instanceof(Queue),
   numberOfConcurrentRequests: z.number().min(1).default(1),
   waitBetweenRequests: z.number().min(0).optional(),
   batchSize: z.number().min(1).default(1000),
