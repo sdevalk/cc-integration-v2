@@ -55,7 +55,6 @@ export async function run(options: RunOptions) {
     'stored-resource',
     (totalNumberOfResources: number, numberOfProcessedResources: number) => {
       progress.log({
-        startTime,
         totalNumberOfResources,
         numberOfProcessedResources,
       });
