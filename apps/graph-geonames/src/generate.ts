@@ -13,10 +13,10 @@ const inputSchema = z.object({
   resourceDir: z.string(),
   endpointUrl: z.string(),
   generateQueryFile: z.string(),
-  numberOfConcurrentRequests: z.number().min(1).default(1),
-  waitBetweenRequests: z.number().min(0).optional(),
-  timeoutPerRequest: z.number().min(0).default(60000),
-  batchSize: z.number().min(1).default(1000),
+  generateWaitBetweenRequests: z.number().optional(),
+  generateTimeoutPerRequest: z.number().optional(),
+  generateNumberOfConcurrentRequests: z.number().optional(),
+  generateBatchSize: z.number().optional(),
 });
 
 export type Input = z.input<typeof inputSchema>;
@@ -29,6 +29,7 @@ export const generate = fromPromise(async ({input}: {input: Input}) => {
     logger: opts.logger,
     resourceDir: opts.resourceDir,
     endpointUrl: opts.endpointUrl,
+    timeoutPerRequest: opts.generateTimeoutPerRequest,
     query,
   });
 
@@ -42,9 +43,9 @@ export const generate = fromPromise(async ({input}: {input: Input}) => {
 
   await storer.run({
     queue: opts.queue,
-    numberOfConcurrentRequests: opts.numberOfConcurrentRequests,
-    waitBetweenRequests: opts.waitBetweenRequests,
-    batchSize: opts.batchSize,
+    waitBetweenRequests: opts.generateWaitBetweenRequests,
+    numberOfConcurrentRequests: opts.generateNumberOfConcurrentRequests,
+    batchSize: opts.generateBatchSize,
   });
 
   const queueSize = await opts.queue.size();

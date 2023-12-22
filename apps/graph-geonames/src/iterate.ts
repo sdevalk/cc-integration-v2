@@ -12,8 +12,9 @@ const inputSchema = z.object({
   queue: z.instanceof(Queue),
   endpointUrl: z.string(),
   iterateQueryFile: z.string(),
-  waitBetweenRequests: z.number().optional(),
-  numberOfIrisPerRequest: z.number().optional(),
+  iterateWaitBetweenRequests: z.number().optional(),
+  iterateTimeoutPerRequest: z.number().optional(),
+  iterateNumberOfIrisPerRequest: z.number().optional(),
 });
 
 export type Input = z.input<typeof inputSchema>;
@@ -31,8 +32,9 @@ export const iterate = fromPromise(async ({input}: {input: Input}) => {
 
   const iterator = new SparqlIterator({
     endpointUrl: opts.endpointUrl,
-    waitBetweenRequests: opts.waitBetweenRequests,
-    numberOfIrisPerRequest: opts.numberOfIrisPerRequest,
+    waitBetweenRequests: opts.iterateWaitBetweenRequests,
+    timeoutPerRequest: opts.iterateTimeoutPerRequest,
+    numberOfIrisPerRequest: opts.iterateNumberOfIrisPerRequest,
     query,
     queue: iteratorQueue,
   });

@@ -14,12 +14,14 @@ const inputSchema = z.object({
   queueFile: z.string(),
   endpointUrl: z.string(),
   iterateQueryFile: z.string(),
+  iterateWaitBetweenRequests: z.number().optional(),
+  iterateTimeoutPerRequest: z.number().optional(),
+  iterateNumberOfIrisPerRequest: z.number().optional(),
   generateQueryFile: z.string(),
-  waitBetweenRequests: z.number().optional(),
-  numberOfIrisPerRequest: z.number().optional(),
-  numberOfConcurrentRequests: z.number().optional(),
-  timeoutPerRequest: z.number().optional(),
-  batchSize: z.number().optional(),
+  generateWaitBetweenRequests: z.number().optional(),
+  generateTimeoutPerRequest: z.number().optional(),
+  generateNumberOfConcurrentRequests: z.number().optional(),
+  generateBatchSize: z.number().optional(),
 });
 
 export type Input = z.input<typeof inputSchema>;
@@ -50,17 +52,11 @@ export async function run(input: Input) {
     id: 'keepGraphUpToDate',
     initial: 'checkQueue',
     context: ({input}) => ({
+      ...input,
       startTime: Date.now(),
       logger: getLogger(),
       queue,
       queueSize: 0,
-      endpointUrl: input.endpointUrl,
-      iterateQueryFile: input.iterateQueryFile,
-      generateQueryFile: input.generateQueryFile,
-      waitBetweenRequests: input.waitBetweenRequests,
-      numberOfIrisPerRequest: input.numberOfIrisPerRequest,
-      resourceDir: input.resourceDir,
-      queueFile: input.queueFile,
     }),
     states: {
       checkQueue: {
