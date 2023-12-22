@@ -142,8 +142,7 @@ export async function run(input: Input) {
             always: [
               {
                 // Only allowed to upload the generated resources if all items
-                // in the queue have been processed. This action fails if another
-                // process is already uploading resources to the data platform
+                // in the queue have been processed
                 target: 'upload',
                 guard: ({context}) => context.queueSize === 0,
               },
@@ -152,6 +151,8 @@ export async function run(input: Input) {
               },
             ],
           },
+          // This action fails if another process is already
+          // uploading resources to the data platform
           upload: {
             invoke: {
               id: 'upload',
