@@ -21,6 +21,7 @@ export const deleteObsoleteResources = fromPromise(
 
     opts.logger.info(`Deleting obsolete resources in "${opts.resourceDir}"`);
 
+    // Beware: if the queue is empty all existing resources on file will be deleted
     const items = await opts.queue.getAll();
     const filestore = new Filestore({dir: opts.resourceDir});
 
