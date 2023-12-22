@@ -1,18 +1,14 @@
-# GeoNames
+# Graph create
 
-Initialize the creating or updating of a graph
+Creates or updates a graph by querying a SPARQL endpoint
 
-## Commands
+## Testing
 
-### Testing
-
-#### DBpedia
-
-##### Collect and queue IRIs from a SPARQL endpoint
+### DBpedia
 
     ./dist/cli.js create \
       --resource-dir ./tmp/dbpedia \
-      --queue-file ./tmp/queue.sqlite \
+      --queue-file ./tmp/data.sqlite \
       --endpoint-url "https://dbpedia.org/sparql" \
       --iterate-query-file ./fixtures/iterate.rq \
       --iterate-wait-between-requests 100 \

@@ -85,31 +85,36 @@ export async function run(input: Input) {
       evaluateQueue: {
         always: [
           {
-            target: 'iterate',
+            target: 'getIrisOfResources',
             guard: ({context}) => context.queueSize === 0,
           },
           {
-            target: 'query',
+            target: 'updateResourcesOfIris',
           },
         ],
       },
-      iterate: {
-        invoke: {
-          id: 'iterate',
-          src: 'iterate',
-          input: ({context}) => context,
-          onDone: 'deleteObsolete',
+      getIrisOfResources: {
+        initial: 'iterate',
+        states: {
+          iterate: {
+            invoke: {
+              id: 'iterate',
+              src: 'iterate',
+              input: ({context}) => context,
+              onDone: 'deleteObsoleteResources',
+            },
+          },
+          deleteObsoleteResources: {
+            invoke: {
+              id: 'deleteObsoleteResources',
+              src: 'deleteObsoleteResources',
+              input: ({context}) => context,
+              onDone: '..finalize',
+            },
+          },
         },
       },
-      deleteObsolete: {
-        invoke: {
-          id: 'deleteObsolete',
-          src: 'deleteObsoleteResources',
-          input: ({context}) => context,
-          onDone: 'finalize',
-        },
-      },
-      query: {
+      updateResourcesOfIris: {
         initial: 'generate',
         states: {
           generate: {
