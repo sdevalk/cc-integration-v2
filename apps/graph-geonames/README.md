@@ -22,4 +22,12 @@ Initialize the creating or updating of a graph
       --generate-wait-between-requests 100 \
       --generate-timeout-per-request 300000 \
       --generate-number-of-concurrent-requests 1 \
-      --generate-batch-size 1
+      --generate-batch-size 1 \
+      --triplydb-instance-url "$TRIPLYDB_INSTANCE_URL" \
+      --triplydb-api-token "$TRIPLYDB_API_TOKEN" \
+      --triplydb-account "$TRIPLYDB_ACCOUNT_DEVELOPMENT" \
+      --triplydb-dataset "$TRIPLYDB_DATASET_KG_DEVELOPMENT" \
+      --triplydb-service-name kg \
+      --triplydb-service-type virtuoso \
+      --graph-name "https://example.org/dbpedia" \
+      --temp-dir ./tmp

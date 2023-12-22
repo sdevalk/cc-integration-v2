@@ -16,6 +16,7 @@
     "@colonial-collections/queue": "*",
     "@colonial-collections/sparql-iterator": "*",
     "@colonial-collections/sparql-storer": "*",
+    "@colonial-collections/triplydb": "*",
     "cac": "6.7.14",
     "fastq": "1.15.0",
     "pretty-ms": "8.0.0",

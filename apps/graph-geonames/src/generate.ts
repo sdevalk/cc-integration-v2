@@ -24,6 +24,10 @@ export type Input = z.input<typeof inputSchema>;
 export const generate = fromPromise(async ({input}: {input: Input}) => {
   const opts = inputSchema.parse(input);
 
+  opts.logger.info(
+    `Generating resources from SPARQL endpoint "${opts.endpointUrl}"`
+  );
+
   const query = await readFile(opts.generateQueryFile, 'utf-8');
   const storer = new SparqlStorer({
     logger: opts.logger,

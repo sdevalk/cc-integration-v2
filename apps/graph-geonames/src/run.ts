@@ -3,6 +3,7 @@ import {deleteObsoleteResources} from './delete-obsolete.js';
 import {finalize} from './finalize.js';
 import {generate} from './generate.js';
 import {iterate} from './iterate.js';
+import {upload} from './upload.js';
 import {getLogger} from '@colonial-collections/common';
 import {Queue} from '@colonial-collections/queue';
 import type {pino} from 'pino';
@@ -22,6 +23,14 @@ const inputSchema = z.object({
   generateTimeoutPerRequest: z.number().optional(),
   generateNumberOfConcurrentRequests: z.number().optional(),
   generateBatchSize: z.number().optional(),
+  triplydbInstanceUrl: z.string(),
+  triplydbApiToken: z.string(),
+  triplydbAccount: z.string(),
+  triplydbDataset: z.string(),
+  triplydbServiceName: z.string(),
+  triplydbServiceType: z.string(),
+  graphName: z.string(),
+  tempDir: z.string().optional(),
 });
 
 export type Input = z.input<typeof inputSchema>;
@@ -47,6 +56,7 @@ export async function run(input: Input) {
       generate,
       iterate,
       finalize,
+      upload,
     },
   }).createMachine({
     id: 'keepGraphUpToDate',
@@ -79,7 +89,7 @@ export async function run(input: Input) {
             guard: ({context}) => context.queueSize === 0,
           },
           {
-            target: 'generate',
+            target: 'query',
           },
         ],
       },
@@ -99,12 +109,52 @@ export async function run(input: Input) {
           onDone: 'finalize',
         },
       },
-      generate: {
-        invoke: {
-          id: 'generate',
-          src: 'generate',
-          input: ({context}) => context,
-          onDone: 'finalize',
+      query: {
+        initial: 'generate',
+        states: {
+          generate: {
+            invoke: {
+              id: 'generate',
+              src: 'generate',
+              input: ({context}) => context,
+              onDone: 'checkQueue',
+            },
+          },
+          checkQueue: {
+            invoke: {
+              id: 'checkQueue',
+              src: 'checkQueue',
+              input: ({context}) => context,
+              onDone: {
+                target: 'evaluateQueue',
+                actions: assign({
+                  queueSize: ({event}) => event.output,
+                }),
+              },
+            },
+          },
+          evaluateQueue: {
+            always: [
+              {
+                // Only allowed to upload the generated resources if all items
+                // in the queue have been processed. This action fails if another
+                // process is already uploading resources to the data platform
+                target: 'upload',
+                guard: ({context}) => context.queueSize === 0,
+              },
+              {
+                target: '..finalize',
+              },
+            ],
+          },
+          upload: {
+            invoke: {
+              id: 'upload',
+              src: 'upload',
+              input: ({context}) => context,
+              onDone: '..finalize',
+            },
+          },
         },
       },
       finalize: {
