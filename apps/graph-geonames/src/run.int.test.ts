@@ -16,11 +16,11 @@ beforeEach(async () => {
 describe('run', () => {
   it('runs', async () => {
     await run({
+      resourceDir,
+      queueFile,
       endpointUrl: 'https://dbpedia.org/sparql',
       iterateQueryFile: './fixtures/iterate.rq',
       generateQueryFile: './fixtures/generate.rq',
-      resourceDir,
-      queueFile,
     });
   });
 });

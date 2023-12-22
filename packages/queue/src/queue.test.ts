@@ -1,5 +1,4 @@
 import {Queue} from './queue.js';
-import {mkdir} from 'node:fs/promises';
 import {join} from 'node:path';
 import {setTimeout} from 'node:timers/promises';
 import {rimraf} from 'rimraf';
@@ -10,7 +9,6 @@ const queueFile = join(tmpDir, 'queue.sqlite');
 
 beforeEach(async () => {
   await rimraf(tmpDir);
-  await mkdir(tmpDir, {recursive: true});
 });
 
 describe('new', () => {

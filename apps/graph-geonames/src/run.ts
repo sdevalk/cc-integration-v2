@@ -1,31 +1,38 @@
-import {checkQueue, finalize, generate, iterate} from './actors.js';
+import {checkQueue} from './check-queue.js';
+import {deleteObsoleteResources} from './delete-obsolete.js';
+import {finalize} from './finalize.js';
+import {generate} from './generate.js';
+import {iterate} from './iterate.js';
 import {getLogger} from '@colonial-collections/common';
 import {Queue} from '@colonial-collections/queue';
 import type {pino} from 'pino';
 import {assign, createActor, setup} from 'xstate';
 import {z} from 'zod';
 
-const runOptionsSchema = z.object({
+const inputSchema = z.object({
+  resourceDir: z.string(),
+  queueFile: z.string(),
   endpointUrl: z.string(),
   iterateQueryFile: z.string(),
   generateQueryFile: z.string(),
   waitBetweenRequests: z.number().optional(),
   numberOfIrisPerRequest: z.number().optional(),
-  resourceDir: z.string(),
-  queueFile: z.string(),
+  numberOfConcurrentRequests: z.number().optional(),
+  timeoutPerRequest: z.number().optional(),
+  batchSize: z.number().optional(),
 });
 
-export type RunOptions = z.input<typeof runOptionsSchema>;
+export type Input = z.input<typeof inputSchema>;
 
-export async function run(options: RunOptions) {
-  const opts = runOptionsSchema.parse(options);
+export async function run(input: Input) {
+  const opts = inputSchema.parse(input);
 
   const queue = await Queue.new({path: opts.queueFile});
 
   const workflow = setup({
     types: {} as {
-      input: RunOptions;
-      context: RunOptions & {
+      input: Input;
+      context: Input & {
         startTime: number;
         logger: pino.Logger;
         queue: Queue;
@@ -34,6 +41,7 @@ export async function run(options: RunOptions) {
     },
     actors: {
       checkQueue,
+      deleteObsoleteResources,
       generate,
       iterate,
       finalize,
@@ -70,12 +78,10 @@ export async function run(options: RunOptions) {
       },
       evaluateQueue: {
         always: [
-          // If the queue is empty: fill it by iterating
           {
             target: 'iterate',
             guard: ({context}) => context.queueSize === 0,
           },
-          // If the queue is not empty: generate resources in the queue
           {
             target: 'generate',
           },
@@ -85,6 +91,14 @@ export async function run(options: RunOptions) {
         invoke: {
           id: 'iterate',
           src: 'iterate',
+          input: ({context}) => context,
+          onDone: 'deleteObsolete',
+        },
+      },
+      deleteObsolete: {
+        invoke: {
+          id: 'deleteObsolete',
+          src: 'deleteObsoleteResources',
           input: ({context}) => context,
           onDone: 'finalize',
         },
