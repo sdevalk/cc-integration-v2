@@ -7,33 +7,32 @@ import {iterate} from './iterate.js';
 import {upload} from './upload.js';
 import {getLogger} from '@colonial-collections/common';
 import {Queue} from '@colonial-collections/queue';
+import {join} from 'node:path';
 import type {pino} from 'pino';
 import {assign, createActor, setup} from 'xstate';
 import {z} from 'zod';
 
 const inputSchema = z.object({
-  locationsResourceDir: z.string(),
-  countriesResourceDir: z.string(),
-  locationsQueueFile: z.string(),
-  countriesQueueFile: z.string(),
+  resourceDir: z.string(),
+  queueDir: z.string(),
   endpointUrl: z.string(),
-  iterateLocationsQueryFile: z.string(),
+  locationsIterateQueryFile: z.string(),
+  countriesIterateQueryFile: z.string(),
   iterateWaitBetweenRequests: z.number().default(500),
   iterateTimeoutPerRequest: z.number().optional(),
   iterateNumberOfIrisPerRequest: z.number().default(10000),
-  generateCredentials: z
+  dereferenceCredentials: z
     .object({
       type: z.literal('basic-auth'),
       username: z.string(),
       password: z.string(),
     })
     .optional(),
-  generateHeaders: z.record(z.string(), z.string()).optional(),
-  generateWaitBetweenRequests: z.number().default(100),
-  generateTimeoutPerRequest: z.number().optional(),
-  generateNumberOfConcurrentRequests: z.number().default(5),
-  generateBatchSize: z.number().default(500), // Mind the hourly and daily limits of GeoNames
-  iterateCountriesQueryFile: z.string(),
+  dereferenceHeaders: z.record(z.string(), z.string()).optional(),
+  dereferenceWaitBetweenRequests: z.number().default(100),
+  dereferenceTimeoutPerRequest: z.number().optional(),
+  dereferenceNumberOfConcurrentRequests: z.number().default(5),
+  dereferenceBatchSize: z.number().default(500), // Mind the hourly and daily limits of GeoNames
   triplydbInstanceUrl: z.string(),
   triplydbApiToken: z.string(),
   triplydbAccount: z.string(),
@@ -49,20 +48,25 @@ export type Input = z.input<typeof inputSchema>;
 export async function run(input: Input) {
   const opts = inputSchema.parse(input);
 
-  const locationsQueue = await Queue.new({path: opts.locationsQueueFile});
-  const countriesQueue = await Queue.new({path: opts.countriesQueueFile});
+  const locationsQueue = await Queue.new({
+    path: join(opts.queueDir, 'locations.sqlite'),
+  });
+  const countriesQueue = await Queue.new({
+    path: join(opts.queueDir, 'countries.sqlite'),
+  });
 
   /*
-    If locationsQueue is empty AND countriesQueue is empty (a new run has begun)
-      Fetch IRIs of locations
-    If locationsQueue is not empty
-      Deref IRIs of locations
-    If countriesQueue is empty
-      Fetch IRIs of countries
-    If countriesQueue is not empty
-      Deref IRIs of countries
-      If countriesQueue is empty
-        Upload
+    Workflow:
+    If locationsQueue is empty and countriesQueue is empty: (start a new run)
+      Collect IRIs of locations
+    If locationsQueue is not empty:
+      Dereference IRIs of locations
+    If countriesQueue is empty:
+      Collect IRIs of countries
+    If countriesQueue is not empty:
+      Dereference IRIs of countries
+      If countriesQueue is empty:
+        Upload to data platform
   */
 
   const workflow = setup({
@@ -71,9 +75,11 @@ export async function run(input: Input) {
       context: Input & {
         startTime: number;
         logger: pino.Logger;
+        locationsResourceDir: string;
         locationsQueue: Queue;
-        countriesQueue: Queue;
         locationsQueueSize: number;
+        countriesResourceDir: string;
+        countriesQueue: Queue;
         countriesQueueSize: number;
       };
     },
@@ -93,6 +99,8 @@ export async function run(input: Input) {
       ...input,
       startTime: Date.now(),
       logger: getLogger(),
+      locationsResourceDir: join(input.resourceDir, 'locations'),
+      countriesResourceDir: join(input.resourceDir, 'countries'),
       locationsQueue,
       countriesQueue,
       locationsQueueSize: 0,
@@ -164,7 +172,7 @@ export async function run(input: Input) {
               input: ({context}) => ({
                 ...context,
                 queue: context.locationsQueue,
-                iterateQueryFile: context.iterateLocationsQueryFile,
+                iterateQueryFile: context.locationsIterateQueryFile,
               }),
               onDone: 'deleteObsoleteLocations',
             },
@@ -193,6 +201,7 @@ export async function run(input: Input) {
             resourceDir: context.locationsResourceDir,
           }),
           onDone: 'finalize',
+          // TODO: add check - if locationsQueue is empty, go to initUpdateOfCountries
         },
       },
       initUpdateOfCountries: {
@@ -206,7 +215,7 @@ export async function run(input: Input) {
                 ...context,
                 queue: context.countriesQueue,
                 resourceDir: context.countriesResourceDir,
-                iterateQueryFile: context.iterateCountriesQueryFile,
+                iterateQueryFile: context.countriesIterateQueryFile,
               }),
               onDone: 'deleteObsoleteCountries',
             },

@@ -8,9 +8,16 @@ const cli = cac();
 cli
   .command('create', 'Create or update a graph by dereferencing GeoNames IRIs')
   .option('--resource-dir <string>', 'Directory for storing RDF resources')
-  .option('--queue-file <string>', 'File with the queue')
+  .option('--queue-dir <string>', 'Directory for the queue files')
   .option('--endpoint-url <string>', 'SPARQL endpoint URL')
-  .option('--iterate-query-file <string>', 'File with a SPARQL query')
+  .option(
+    '--locations-iterate-query-file <string>',
+    'File with a SPARQL query for collecting locations'
+  )
+  .option(
+    '--countries-iterate-query-file <string>',
+    'File with a SPARQL query for collecting countries'
+  )
   .option(
     '--iterate-wait-between-requests [number]',
     'Wait between requests, in milliseconds'
@@ -24,24 +31,24 @@ cli
     'Number of IRIs to collect per request'
   )
   .option(
-    '--generateCredentials [string]',
+    '--dereference.credentials [string]',
     'Credentials: type, username and password'
   )
-  .option('--generateHeaders [string]', 'Headers for dereferencing IRIs')
+  .option('--dereference.headers [string]', 'Headers for dereferencing IRIs')
   .option(
-    '--generate-wait-between-requests [number]',
+    '--dereference-wait-between-requests [number]',
     'Wait between requests, in milliseconds'
   )
   .option(
-    '--generate-timeout-per-request [number]',
+    '--dereference-timeout-per-request [number]',
     'Timeout per request, in milliseconds'
   )
   .option(
-    '--generate-number-of-concurrent-requests [number]',
+    '--dereference-number-of-concurrent-requests [number]',
     'Number of concurrent requests'
   )
   .option(
-    '--generate-batch-size [number]',
+    '--dereference-batch-size [number]',
     'Number of IRIs from the queue to process'
   )
   .option('--triplydb-instance-url <string>', 'TriplyDB instance URL')
