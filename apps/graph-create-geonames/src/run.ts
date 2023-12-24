@@ -272,9 +272,47 @@ export async function run(input: Input) {
                 queue: context.countriesQueue,
                 resourceDir: context.countriesResourceDir,
               }),
+              onDone: 'checkCountriesQueue',
+            },
+          },
+          checkCountriesQueue: {
+            invoke: {
+              id: 'checkCountriesQueue',
+              src: 'checkQueue',
+              input: ({context}) => ({
+                ...context,
+                queue: context.countriesQueue,
+              }),
+              onDone: {
+                target: 'evaluateCountriesQueue',
+                actions: assign({
+                  countriesQueueSize: ({event}) => event.output,
+                }),
+              },
+            },
+          },
+          evaluateCountriesQueue: {
+            always: [
+              {
+                // Only allowed to upload the generated resources if all items
+                // in the queue have been processed
+                target: 'upload',
+                guard: ({context}) => context.countriesQueueSize === 0,
+              },
+              {
+                target: '#main.finalize',
+              },
+            ],
+          },
+          // This action fails if another process is already
+          // uploading resources to the data platform
+          upload: {
+            invoke: {
+              id: 'upload',
+              src: 'upload',
+              input: ({context}) => context,
               onDone: '#main.finalize',
             },
-            // TODO: upload if countriesQueue is empty
           },
         },
       },
