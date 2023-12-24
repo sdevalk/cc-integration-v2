@@ -56,15 +56,15 @@ export async function run(input: Input) {
   });
 
   /*
-    Workflow:
+    High-level workflow:
     If locationsQueue is empty and countriesQueue is empty: (start a new run)
       Collect IRIs of locations
     If locationsQueue is not empty:
-      Dereference IRIs of locations
-    If countriesQueue is empty:
-      Collect IRIs of countries
+      Update locations by dereferencing IRIs
+      If locationsQueue is empty:
+        Collect IRIs of countries
     If countriesQueue is not empty:
-      Dereference IRIs of countries
+      Update countries by dereferencing IRIs
       If countriesQueue is empty:
         Upload to data platform
   */
@@ -93,7 +93,7 @@ export async function run(input: Input) {
       upload,
     },
   }).createMachine({
-    id: 'keepGraphUpToDate',
+    id: 'main',
     initial: 'checkLocationsQueue',
     context: ({input}) => ({
       ...input,
@@ -146,15 +146,11 @@ export async function run(input: Input) {
               context.countriesQueueSize === 0,
           },
           {
-            target: 'dereferenceLocations',
+            target: 'updateLocations',
             guard: ({context}) => context.locationsQueueSize !== 0,
           },
           {
-            target: 'initUpdateOfCountries',
-            guard: ({context}) => context.countriesQueueSize === 0,
-          },
-          {
-            target: 'dereferenceCountries',
+            target: 'updateCountries',
             guard: ({context}) => context.countriesQueueSize !== 0,
           },
           {
@@ -163,11 +159,11 @@ export async function run(input: Input) {
         ],
       },
       initUpdateOfLocations: {
-        initial: 'iterate',
+        initial: 'iterateLocations',
         states: {
-          iterate: {
+          iterateLocations: {
             invoke: {
-              id: 'iterate',
+              id: 'iterateLocations',
               src: 'iterate',
               input: ({context}) => ({
                 ...context,
@@ -186,35 +182,65 @@ export async function run(input: Input) {
                 queue: context.locationsQueue,
                 resourceDir: context.locationsResourceDir,
               }),
-              onDone: '..finalize',
+              onDone: '#main.finalize',
             },
           },
         },
       },
-      dereferenceLocations: {
-        invoke: {
-          id: 'dereferenceLocations',
-          src: 'dereference',
-          input: ({context}) => ({
-            ...context,
-            queue: context.locationsQueue,
-            resourceDir: context.locationsResourceDir,
-          }),
-          onDone: 'finalize',
-          // TODO: add check - if locationsQueue is empty, go to initUpdateOfCountries
+      updateLocations: {
+        initial: 'dereferenceLocations',
+        states: {
+          dereferenceLocations: {
+            invoke: {
+              id: 'dereferenceLocations',
+              src: 'dereference',
+              input: ({context}) => ({
+                ...context,
+                queue: context.locationsQueue,
+                resourceDir: context.locationsResourceDir,
+              }),
+              onDone: 'checkLocationsQueue',
+            },
+          },
+          checkLocationsQueue: {
+            invoke: {
+              id: 'checkLocationsQueue',
+              src: 'checkQueue',
+              input: ({context}) => ({
+                queue: context.locationsQueue,
+              }),
+              onDone: {
+                target: 'evaluateLocationsQueue',
+                actions: assign({
+                  locationsQueueSize: ({event}) => event.output,
+                }),
+              },
+            },
+          },
+          evaluateLocationsQueue: {
+            always: [
+              {
+                target: '#main.initUpdateOfCountries',
+                guard: ({context}) => context.locationsQueueSize === 0,
+              },
+              {
+                target: '#main.finalize',
+              },
+            ],
+          },
         },
       },
       initUpdateOfCountries: {
         initial: 'fileIterate',
         states: {
-          iterate: {
+          fileIterate: {
             invoke: {
               id: 'fileIterate',
               src: 'fileIterate',
               input: ({context}) => ({
                 ...context,
                 queue: context.countriesQueue,
-                resourceDir: context.countriesResourceDir,
+                resourceDir: context.locationsResourceDir,
                 iterateQueryFile: context.countriesIterateQueryFile,
               }),
               onDone: 'deleteObsoleteCountries',
@@ -229,23 +255,28 @@ export async function run(input: Input) {
                 queue: context.countriesQueue,
                 resourceDir: context.countriesResourceDir,
               }),
-              onDone: '..finalize',
+              onDone: '#main.finalize',
             },
           },
         },
       },
-      dereferenceCountries: {
-        invoke: {
-          id: 'dereferenceCountries',
-          src: 'dereference',
-          input: ({context}) => ({
-            ...context,
-            queue: context.countriesQueue,
-            resourceDir: context.countriesResourceDir,
-          }),
-          onDone: 'finalize',
+      updateCountries: {
+        initial: 'dereferenceCountries',
+        states: {
+          dereferenceCountries: {
+            invoke: {
+              id: 'dereferenceCountries',
+              src: 'dereference',
+              input: ({context}) => ({
+                ...context,
+                queue: context.countriesQueue,
+                resourceDir: context.countriesResourceDir,
+              }),
+              onDone: '#main.finalize',
+            },
+            // TODO: upload if countriesQueue is empty
+          },
         },
-        // TODO: upload if countriesQueue is empty
       },
       finalize: {
         invoke: {
