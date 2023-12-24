@@ -32,7 +32,7 @@ const inputSchema = z.object({
   dereferenceWaitBetweenRequests: z.number().default(100),
   dereferenceTimeoutPerRequest: z.number().optional(),
   dereferenceNumberOfConcurrentRequests: z.number().default(5),
-  dereferenceBatchSize: z.number().default(500), // Mind the hourly and daily limits of GeoNames
+  dereferenceBatchSize: z.number().default(750), // Mind the hourly and daily limits of GeoNames
   triplydbInstanceUrl: z.string(),
   triplydbApiToken: z.string(),
   triplydbAccount: z.string(),
