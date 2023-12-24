@@ -59,7 +59,7 @@ export async function run(input: Input) {
       upload,
     },
   }).createMachine({
-    id: 'keepGraphUpToDate',
+    id: 'main',
     initial: 'checkQueue',
     context: ({input}) => ({
       ...input,
@@ -109,7 +109,7 @@ export async function run(input: Input) {
               id: 'deleteObsoleteResources',
               src: 'deleteObsoleteResources',
               input: ({context}) => context,
-              onDone: '..finalize',
+              onDone: '#main.finalize',
             },
           },
         },
@@ -147,7 +147,7 @@ export async function run(input: Input) {
                 guard: ({context}) => context.queueSize === 0,
               },
               {
-                target: '..finalize',
+                target: '#main.finalize',
               },
             ],
           },
@@ -158,7 +158,7 @@ export async function run(input: Input) {
               id: 'upload',
               src: 'upload',
               input: ({context}) => context,
-              onDone: '..finalize',
+              onDone: '#main.finalize',
             },
           },
         },
