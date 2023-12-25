@@ -177,7 +177,5 @@ export async function run(input: Input) {
     },
   });
 
-  const actor = createActor(workflow, {input: opts});
-  actor.start();
-  await toPromise(actor);
+  await toPromise(createActor(workflow, {input: opts}).start());
 }
