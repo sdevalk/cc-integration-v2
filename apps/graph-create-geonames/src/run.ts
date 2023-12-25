@@ -9,7 +9,7 @@ import {getLogger} from '@colonial-collections/common';
 import {Queue} from '@colonial-collections/queue';
 import {join} from 'node:path';
 import type {pino} from 'pino';
-import {assign, createActor, setup} from 'xstate';
+import {assign, createActor, setup, toPromise} from 'xstate';
 import {z} from 'zod';
 
 const inputSchema = z.object({
@@ -330,5 +330,7 @@ export async function run(input: Input) {
     },
   });
 
-  createActor(workflow, {input: opts}).start();
+  const actor = createActor(workflow, {input: opts});
+  actor.start();
+  await toPromise(actor);
 }
