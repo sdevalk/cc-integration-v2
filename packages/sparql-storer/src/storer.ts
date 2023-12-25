@@ -68,11 +68,17 @@ export class SparqlStorer extends EventEmitter {
     const saveQueue = fastq.promise(save, opts.numberOfConcurrentRequests);
 
     for (const item of items) {
-      saveQueue.push(item).catch(err => {
+      saveQueue.push(item).catch(async err => {
         this.logger.error(
           err,
           `An error occurred when saving "${item.iri}": ${err.message}`
         );
+
+        try {
+          await opts.queue.retry(item);
+        } catch (err) {
+          this.logger.error(err);
+        }
       });
     }
 

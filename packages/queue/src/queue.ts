@@ -1,5 +1,5 @@
 import {ESMFileMigrationProvider} from './provider.js';
-import {Database, NewItem} from './types.js';
+import {Database, Item, NewItem} from './types.js';
 import SQLite from 'better-sqlite3';
 import {Migrator, Kysely, SqliteDialect} from 'kysely';
 import {mkdir} from 'node:fs/promises';
@@ -8,6 +8,7 @@ import {z} from 'zod';
 
 export const constructorOptionsSchema = z.object({
   path: z.string(),
+  maxRetryCount: z.number().int().min(0).default(3),
 });
 
 export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;
@@ -22,14 +23,17 @@ export type GetAllOptions = z.input<typeof getAllOptionsSchema>;
 
 export class Queue {
   private readonly db: Kysely<Database>;
+  private readonly maxRetryCount: number;
 
   constructor(options: ConstructorOptions) {
+    const opts = constructorOptionsSchema.parse(options);
+
     const dialect = new SqliteDialect({
       database: async () => {
         // Make sure the directory of the file exists - SQLite will not create it
-        await mkdir(dirname(options.path), {recursive: true});
+        await mkdir(dirname(opts.path), {recursive: true});
 
-        const db = new SQLite(options.path);
+        const db = new SQLite(opts.path);
         db.pragma('journal_mode = WAL');
         db.pragma('auto_vacuum = FULL'); // Shrink database when data is deleted
         return db;
@@ -37,6 +41,7 @@ export class Queue {
     });
 
     this.db = new Kysely<Database>({dialect});
+    this.maxRetryCount = opts.maxRetryCount;
   }
 
   private async runMigrations() {
@@ -50,9 +55,7 @@ export class Queue {
   }
 
   static async new(options: ConstructorOptions) {
-    const opts = constructorOptionsSchema.parse(options);
-
-    const queue = new Queue(opts);
+    const queue = new Queue(options);
     await queue.runMigrations();
 
     return queue;
@@ -68,6 +71,23 @@ export class Queue {
 
   async remove(id: number) {
     await this.db.deleteFrom('queue').where('id', '=', id).execute();
+  }
+
+  async retry(item: Item) {
+    await this.remove(item.id);
+
+    const newRetryCount = item.retry_count + 1;
+    if (newRetryCount > this.maxRetryCount) {
+      throw new Error(
+        `Cannot retry "${item.iri}": max retry count of ${this.maxRetryCount} reached`
+      );
+    }
+
+    const newItem: NewItem = {
+      iri: item.iri,
+      retry_count: newRetryCount,
+    };
+    return this.push(newItem);
   }
 
   async getAll(options?: GetAllOptions) {

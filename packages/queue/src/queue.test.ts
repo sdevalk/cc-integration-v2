@@ -29,7 +29,62 @@ describe('push', async () => {
     const items = await queue.getAll();
 
     expect(items.length).toBe(1);
-    expect(items[0].iri).toEqual(iri);
+    expect(items[0]).toMatchObject({
+      iri,
+      retry_count: 0,
+    });
+  });
+
+  it('pushes an item with a retry count', async () => {
+    const queue = await Queue.new({path: queueFile});
+    const iri = 'https://example.org';
+
+    await queue.push({iri, retry_count: 1});
+
+    const items = await queue.getAll();
+
+    expect(items.length).toBe(1);
+    expect(items[0]).toMatchObject({
+      iri,
+      retry_count: 1,
+    });
+  });
+});
+
+describe('retry', async () => {
+  it('retries an item', async () => {
+    const queue = await Queue.new({path: queueFile});
+    const iri = 'https://example.org/';
+
+    const originalItem = await queue.push({iri});
+    await queue.push({iri});
+
+    await queue.retry(originalItem);
+
+    const items = await queue.getAll();
+
+    expect(items.length).toBe(2);
+    expect(items[0].retry_count).toEqual(0);
+    expect(items[1].retry_count).toEqual(1);
+  });
+
+  it('throws if max retry count is reached', async () => {
+    expect.assertions(1);
+
+    const queue = await Queue.new({path: queueFile, maxRetryCount: 1});
+    const iri = 'https://example.org/';
+
+    const originalItem = await queue.push({iri});
+    const retryItem = await queue.retry(originalItem);
+
+    try {
+      await queue.retry(retryItem);
+    } catch (err) {
+      const error = err as Error;
+      expect(error.message).toEqual(
+        'Cannot retry "https://example.org/": max retry count of 1 reached'
+      );
+    }
   });
 });
 

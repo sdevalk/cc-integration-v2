@@ -15,6 +15,7 @@ export interface QueueTable {
   // wrapper. Here we define a column `created_at` that is selected as
   // a `Date`, can optionally be provided as a `string` in inserts and
   // can never be updated:
+  retry_count: ColumnType<number, number | undefined, number>;
   created_at: ColumnType<Date, string | undefined, never>;
   updated_at: ColumnType<Date, string | undefined, string | undefined>;
 }
