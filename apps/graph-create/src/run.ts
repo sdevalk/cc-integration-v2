@@ -40,6 +40,16 @@ export async function run(input: Input) {
 
   const queue = await Queue.new({path: opts.queueFile});
 
+  /*
+    High-level workflow:
+    If queue is empty: (start a new run)
+      Collect IRIs of resources
+    If queue is not empty:
+      Updates resources by querying a SPARQL endpoint with their IRIs
+      If queue is empty:
+        Upload to data platform
+  */
+
   const workflow = setup({
     types: {} as {
       input: Input;
