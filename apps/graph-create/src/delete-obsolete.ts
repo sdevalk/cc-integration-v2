@@ -19,22 +19,22 @@ export const deleteObsoleteResources = fromPromise(
   async ({input}: {input: Input}) => {
     const opts = inputSchema.parse(input);
 
-    opts.logger.info(`Deleting obsolete resources in "${opts.resourceDir}"`);
+    // opts.logger.info(`Deleting obsolete resources in "${opts.resourceDir}"`);
 
-    // Beware: if the queue is empty all existing resources on file will be deleted
-    const items = await opts.queue.getAll();
-    const filestore = new Filestore({dir: opts.resourceDir});
+    // // Beware: if the queue is empty all existing resources on file will be deleted
+    // const items = await opts.queue.getAll();
+    // const filestore = new Filestore({dir: opts.resourceDir});
 
-    const hashesOfCurrentIris = items.map(item =>
-      filestore.createHashFromIri(item.iri)
-    );
-    const matchFn = async (hashOfIri: string) =>
-      !hashesOfCurrentIris.includes(hashOfIri);
+    // const hashesOfCurrentIris = items.map(item =>
+    //   filestore.createHashFromIri(item.iri)
+    // );
+    // const matchFn = async (hashOfIri: string) =>
+    //   !hashesOfCurrentIris.includes(hashOfIri);
 
-    const deleteCount = await filestore.deleteIfMatches(matchFn);
+    // const deleteCount = await filestore.deleteIfMatches(matchFn);
 
-    opts.logger.info(
-      `Deleted ${deleteCount} obsolete resources in "${opts.resourceDir}"`
-    );
+    // opts.logger.info(
+    //   `Deleted ${deleteCount} obsolete resources in "${opts.resourceDir}"`
+    // );
   }
 );
