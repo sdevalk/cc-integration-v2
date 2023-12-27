@@ -6,6 +6,7 @@ export async function up(db: Kysely<Database>) {
     .createTable('queue')
     .addColumn('id', 'integer', col => col.primaryKey().notNull())
     .addColumn('iri', 'text', col => col.notNull())
+    .addColumn('retry_count', 'integer', col => col.defaultTo(0).notNull())
     .addColumn('created_at', 'text', col =>
       col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull()
     )

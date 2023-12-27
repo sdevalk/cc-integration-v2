@@ -11,7 +11,7 @@ import {beforeEach, describe, expect, it} from 'vitest';
 let connection: Connection;
 const tmpDir = './tmp/integration';
 const resourceDir = join(tmpDir, 'resources');
-const dataFile = join(tmpDir, 'data.sqlite');
+const dataDir = join(tmpDir, 'data');
 const triplydbInstanceUrl = env.TRIPLYDB_INSTANCE_URL as string;
 const triplydbApiToken = env.TRIPLYDB_API_TOKEN as string;
 const triplydbAccount = env.TRIPLYDB_ACCOUNT_DEVELOPMENT as string;
@@ -23,6 +23,7 @@ const graphName = 'https://example.org/graph-create-integration';
 beforeEach(async () => {
   await rimraf(tmpDir);
   await mkdir(tmpDir, {recursive: true});
+  const dataFile = join(dataDir, 'data.sqlite');
   connection = await Connection.new({path: dataFile});
 });
 
@@ -30,7 +31,7 @@ describe('run - if queue is empty', () => {
   it('collects IRIs of resources', async () => {
     await run({
       resourceDir,
-      dataFile,
+      dataDir,
       endpointUrl: 'https://dbpedia.org/sparql',
       iterateQueryFile: './fixtures/queries/iterate-john-mccallum.rq',
       generateQueryFile: '', // Unused for the test
@@ -65,7 +66,7 @@ describe('run - if queue is empty', () => {
 
     await run({
       resourceDir,
-      dataFile,
+      dataDir,
       endpointUrl: 'https://dbpedia.org/sparql',
       iterateQueryFile: './fixtures/queries/iterate-jack-dowding.rq',
       generateQueryFile: '', // Unused for the test
@@ -108,7 +109,7 @@ describe('run - if queue is not empty', () => {
 
     await run({
       resourceDir,
-      dataFile,
+      dataDir,
       endpointUrl: 'https://vocab.getty.edu/sparql',
       iterateQueryFile: '', // Unused for the test
       generateQueryFile: './fixtures/queries/generate-aat.rq',
@@ -131,7 +132,7 @@ describe('run - if queue is not empty', () => {
 
     await run({
       resourceDir,
-      dataFile,
+      dataDir,
       endpointUrl: 'https://vocab.getty.edu/sparql',
       iterateQueryFile: '', // Unused for the test
       generateQueryFile: './fixtures/queries/generate-aat.rq',

@@ -8,7 +8,7 @@ const cli = cac();
 cli
   .command('create', 'Create or update a graph by querying a SPARQL endpoint')
   .option('--resource-dir <string>', 'Directory for storing RDF resources')
-  .option('--data-file <string>', 'File with data')
+  .option('--data-dir <string>', 'Directory for the data files')
   .option('--endpoint-url <string>', 'SPARQL endpoint URL')
   .option('--iterate-query-file <string>', 'File with a SPARQL query')
   .option(

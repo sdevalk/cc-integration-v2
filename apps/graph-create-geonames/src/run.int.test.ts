@@ -6,7 +6,7 @@ import {beforeEach, describe, it} from 'vitest';
 
 const tmpDir = './tmp/geonames';
 const resourceDir = join(tmpDir, 'resources');
-const dataDir = join(tmpDir, 'queues');
+const dataDir = join(tmpDir, 'data');
 const triplydbInstanceUrl = env.TRIPLYDB_INSTANCE_URL as string;
 const triplydbApiToken = env.TRIPLYDB_API_TOKEN as string;
 const triplydbAccount = env.TRIPLYDB_ACCOUNT_DEVELOPMENT as string;

@@ -7,8 +7,8 @@ Creates or updates a graph by querying a SPARQL endpoint
 ### DBpedia
 
     ./dist/cli.js create \
-      --resource-dir ./tmp/dbpedia \
-      --data-file ./tmp/data.sqlite \
+      --resource-dir ./tmp/dbpedia/resources \
+      --data-dir ./tmp/dbpedia/data \
       --endpoint-url "https://dbpedia.org/sparql" \
       --iterate-query-file ./fixtures/queries/iterate-dbpedia.rq \
       --iterate-wait-between-requests 100 \

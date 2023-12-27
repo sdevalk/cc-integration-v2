@@ -5,11 +5,11 @@ import {setTimeout} from 'node:timers/promises';
 import {rimraf} from 'rimraf';
 import {beforeEach, describe, expect, it} from 'vitest';
 
+const tmpDir = './tmp';
+const dataFile = join(tmpDir, 'queue.sqlite');
 let connection: Connection;
 
 beforeEach(async () => {
-  const tmpDir = './tmp';
-  const dataFile = join(tmpDir, 'queue.sqlite');
   await rimraf(tmpDir);
   connection = await Connection.new({path: dataFile});
 });
