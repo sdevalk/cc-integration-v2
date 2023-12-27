@@ -13,7 +13,7 @@
   "dependencies": {
     "@colonial-collections/common": "*",
     "@colonial-collections/filestore": "*",
-    "@colonial-collections/queue": "*",
+    "@colonial-collections/datastore": "*",
     "@colonial-collections/sparql-file-iterator": "*",
     "@colonial-collections/sparql-iterator": "*",
     "@colonial-collections/dereference-storer": "*",

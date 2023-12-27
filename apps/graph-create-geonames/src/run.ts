@@ -6,7 +6,7 @@ import {finalize} from './finalize.js';
 import {iterate} from './iterate.js';
 import {upload} from './upload.js';
 import {getLogger} from '@colonial-collections/common';
-import {Queue} from '@colonial-collections/queue';
+import {Connection, Queue} from '@colonial-collections/datastore';
 import {join} from 'node:path';
 import type {pino} from 'pino';
 import {assign, createActor, setup, toPromise} from 'xstate';
@@ -14,7 +14,7 @@ import {z} from 'zod';
 
 const inputSchema = z.object({
   resourceDir: z.string(),
-  queueDir: z.string(),
+  dataDir: z.string(),
   endpointUrl: z.string(),
   locationsIterateQueryFile: z.string(),
   countriesIterateQueryFile: z.string(),
@@ -45,15 +45,18 @@ const inputSchema = z.object({
 
 export type Input = z.input<typeof inputSchema>;
 
+async function getQueue(dataFile: string) {
+  const connection = await Connection.new({path: dataFile});
+  const queue = new Queue({connection});
+
+  return queue;
+}
+
 export async function run(input: Input) {
   const opts = inputSchema.parse(input);
 
-  const locationsQueue = await Queue.new({
-    path: join(opts.queueDir, 'locations.sqlite'),
-  });
-  const countriesQueue = await Queue.new({
-    path: join(opts.queueDir, 'countries.sqlite'),
-  });
+  const locationsQueue = await getQueue(join(opts.dataDir, 'locations.sqlite'));
+  const countriesQueue = await getQueue(join(opts.dataDir, 'countries.sqlite'));
 
   /*
     High-level workflow:

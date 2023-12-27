@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "@colonial-collections/common": "*",
+    "@colonial-collections/datastore": "*",
     "@colonial-collections/filestore": "*",
-    "@colonial-collections/queue": "*",
     "@colonial-collections/sparql-generator": "*",
     "fastq": "1.15.0",
     "zod": "3.22.4"

@@ -12,9 +12,9 @@
   },
   "dependencies": {
     "@colonial-collections/common": "*",
+    "@colonial-collections/datastore": "*",
     "@colonial-collections/dereferencer": "*",
     "@colonial-collections/filestore": "*",
-    "@colonial-collections/queue": "*",
     "fastq": "1.15.0",
     "zod": "3.22.4"
   },

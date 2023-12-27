@@ -1,4 +1,4 @@
-import {Queue} from '@colonial-collections/queue';
+import {Queue} from '@colonial-collections/datastore';
 import {fromPromise} from 'xstate';
 import {z} from 'zod';
 

@@ -1,5 +1,5 @@
 {
-  "name": "@colonial-collections/queue",
+  "name": "@colonial-collections/datastore",
   "version": "1.0.0",
   "type": "module",
   "private": true,

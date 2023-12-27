@@ -6,7 +6,7 @@ import {beforeEach, describe, it} from 'vitest';
 
 const tmpDir = './tmp/geonames';
 const resourceDir = join(tmpDir, 'resources');
-const queueDir = join(tmpDir, 'queues');
+const dataDir = join(tmpDir, 'queues');
 const triplydbInstanceUrl = env.TRIPLYDB_INSTANCE_URL as string;
 const triplydbApiToken = env.TRIPLYDB_API_TOKEN as string;
 const triplydbAccount = env.TRIPLYDB_ACCOUNT_DEVELOPMENT as string;
@@ -25,7 +25,7 @@ describe('run', () => {
       endpointUrl:
         'https://api.colonialcollections.nl/datasets/data-hub-testing/knowledge-graph/services/kg/sparql',
       resourceDir,
-      queueDir,
+      dataDir,
       locationsIterateQueryFile: './fixtures/iterate-locations.rq',
       countriesIterateQueryFile: './fixtures/iterate-countries.rq',
       triplydbInstanceUrl,

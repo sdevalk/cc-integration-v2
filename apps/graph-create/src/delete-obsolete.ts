@@ -1,5 +1,5 @@
+import {Queue} from '@colonial-collections/datastore';
 import {Filestore} from '@colonial-collections/filestore';
-import {Queue} from '@colonial-collections/queue';
 import {fromPromise} from 'xstate';
 import {z} from 'zod';
 

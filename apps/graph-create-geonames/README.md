@@ -8,7 +8,7 @@ Creates or updates a graph by dereferencing GeoNames IRIs
 
     ./dist/cli.js create \
       --resource-dir ./tmp/geonames/resources \
-      --queue-dir ./tmp/geonames/queues \
+      --data-dir ./tmp/geonames/queues \
       --endpoint-url "https://api.colonialcollections.nl/datasets/data-hub-testing/knowledge-graph/services/kg/sparql" \
       --locations-iterate-query-file ./fixtures/iterate-locations.rq \
       --countries-iterate-query-file ./fixtures/iterate-countries.rq \

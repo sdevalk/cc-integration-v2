@@ -1,17 +1,14 @@
-import {ESMFileMigrationProvider} from './provider.js';
-import {Database, Item, NewItem} from './types.js';
-import SQLite from 'better-sqlite3';
-import {Migrator, Kysely, SqliteDialect} from 'kysely';
-import {mkdir} from 'node:fs/promises';
-import {dirname} from 'node:path';
+import {Connection} from './connection.js';
+import {Database, QueueItem, NewQueueItem} from './types.js';
+import {Kysely} from 'kysely';
 import {z} from 'zod';
 
-export const constructorOptionsSchema = z.object({
-  path: z.string(),
+const constructorOptionsSchema = z.object({
+  connection: z.instanceof(Connection),
   maxRetryCount: z.number().int().min(0).default(3),
 });
 
-export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;
+export type QueueConstructorOptions = z.input<typeof constructorOptionsSchema>;
 
 const getAllOptionsSchema = z
   .object({
@@ -22,46 +19,17 @@ const getAllOptionsSchema = z
 export type GetAllOptions = z.input<typeof getAllOptionsSchema>;
 
 export class Queue {
-  private readonly db: Kysely<Database>;
+  private db: Kysely<Database>;
   private readonly maxRetryCount: number;
 
-  constructor(options: ConstructorOptions) {
+  constructor(options: QueueConstructorOptions) {
     const opts = constructorOptionsSchema.parse(options);
 
-    const dialect = new SqliteDialect({
-      database: async () => {
-        // Make sure the directory of the file exists - SQLite will not create it
-        await mkdir(dirname(opts.path), {recursive: true});
-
-        const db = new SQLite(opts.path);
-        db.pragma('journal_mode = WAL');
-        db.pragma('auto_vacuum = FULL'); // Shrink database when data is deleted
-        return db;
-      },
-    });
-
-    this.db = new Kysely<Database>({dialect});
+    this.db = opts.connection.db;
     this.maxRetryCount = opts.maxRetryCount;
   }
 
-  private async runMigrations() {
-    const provider = new ESMFileMigrationProvider('./migrations');
-    const migrator = new Migrator({db: this.db, provider});
-    const {error} = await migrator.migrateToLatest();
-
-    if (error) {
-      throw error;
-    }
-  }
-
-  static async new(options: ConstructorOptions) {
-    const queue = new Queue(options);
-    await queue.runMigrations();
-
-    return queue;
-  }
-
-  async push(item: NewItem) {
+  async push(item: NewQueueItem) {
     return this.db
       .insertInto('queue')
       .values(item)
@@ -73,7 +41,7 @@ export class Queue {
     await this.db.deleteFrom('queue').where('id', '=', id).execute();
   }
 
-  async retry(item: Item) {
+  async retry(item: QueueItem) {
     await this.remove(item.id);
 
     const newRetryCount = item.retry_count + 1;
@@ -83,7 +51,7 @@ export class Queue {
       );
     }
 
-    const newItem: NewItem = {
+    const newItem: NewQueueItem = {
       iri: item.iri,
       retry_count: newRetryCount,
     };

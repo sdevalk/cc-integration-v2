@@ -1,4 +1,4 @@
-import {Queue} from '@colonial-collections/queue';
+import {Queue} from '@colonial-collections/datastore';
 import {SparqlIterator} from '@colonial-collections/sparql-iterator';
 import fastq from 'fastq';
 import {readFile} from 'node:fs/promises';

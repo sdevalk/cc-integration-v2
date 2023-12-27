@@ -1,19 +1,22 @@
+import {Connection} from './connection.js';
 import {Queue} from './queue.js';
 import {join} from 'node:path';
 import {setTimeout} from 'node:timers/promises';
 import {rimraf} from 'rimraf';
 import {beforeEach, describe, expect, it} from 'vitest';
 
-const tmpDir = './tmp';
-const queueFile = join(tmpDir, 'queue.sqlite');
+let connection: Connection;
 
 beforeEach(async () => {
+  const tmpDir = './tmp';
+  const dataFile = join(tmpDir, 'queue.sqlite');
   await rimraf(tmpDir);
+  connection = await Connection.new({path: dataFile});
 });
 
 describe('new', () => {
   it('returns a new instance', async () => {
-    const queue = await Queue.new({path: queueFile});
+    const queue = new Queue({connection});
 
     expect(queue).toBeInstanceOf(Queue);
   });
@@ -21,7 +24,7 @@ describe('new', () => {
 
 describe('push', async () => {
   it('pushes an item', async () => {
-    const queue = await Queue.new({path: queueFile});
+    const queue = new Queue({connection});
     const iri = 'https://example.org';
 
     await queue.push({iri});
@@ -36,7 +39,7 @@ describe('push', async () => {
   });
 
   it('pushes an item with a retry count', async () => {
-    const queue = await Queue.new({path: queueFile});
+    const queue = new Queue({connection});
     const iri = 'https://example.org';
 
     await queue.push({iri, retry_count: 1});
@@ -53,7 +56,7 @@ describe('push', async () => {
 
 describe('retry', async () => {
   it('retries an item', async () => {
-    const queue = await Queue.new({path: queueFile});
+    const queue = new Queue({connection});
     const iri = 'https://example.org/';
 
     const originalItem = await queue.push({iri});
@@ -71,7 +74,7 @@ describe('retry', async () => {
   it('throws if max retry count is reached', async () => {
     expect.assertions(1);
 
-    const queue = await Queue.new({path: queueFile, maxRetryCount: 1});
+    const queue = new Queue({connection, maxRetryCount: 1});
     const iri = 'https://example.org/';
 
     const originalItem = await queue.push({iri});
@@ -90,7 +93,7 @@ describe('retry', async () => {
 
 describe('remove', async () => {
   it('removes an item', async () => {
-    const queue = await Queue.new({path: queueFile});
+    const queue = new Queue({connection});
     const iri = 'https://example.org';
 
     const item = await queue.push({iri});
@@ -105,7 +108,7 @@ describe('remove', async () => {
 
 describe('getAll', async () => {
   it('gets all items, sorted by date of creation', async () => {
-    const queue = await Queue.new({path: queueFile});
+    const queue = new Queue({connection});
     const iri = 'https://example.org';
 
     await queue.push({iri});
@@ -120,7 +123,7 @@ describe('getAll', async () => {
   });
 
   it('gets a limited number of items', async () => {
-    const queue = await Queue.new({path: queueFile});
+    const queue = new Queue({connection});
     const iri = 'https://example.org';
 
     await queue.push({iri});
@@ -135,7 +138,7 @@ describe('getAll', async () => {
 
 describe('size', async () => {
   it('gets the size', async () => {
-    const queue = await Queue.new({path: queueFile});
+    const queue = new Queue({connection});
     const iri = 'https://example.org';
 
     await queue.push({iri});
@@ -148,14 +151,14 @@ describe('size', async () => {
 
 describe('isEmpty', async () => {
   it('returns true if there are no items', async () => {
-    const queue = await Queue.new({path: queueFile});
+    const queue = new Queue({connection});
     const isEmpty = await queue.isEmpty();
 
     expect(isEmpty).toBe(true);
   });
 
   it('returns false if there are items', async () => {
-    const queue = await Queue.new({path: queueFile});
+    const queue = new Queue({connection});
     const iri = 'https://example.org';
 
     await queue.push({iri});

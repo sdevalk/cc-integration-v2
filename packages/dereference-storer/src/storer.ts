@@ -1,6 +1,6 @@
+import {Queue, QueueItem} from '@colonial-collections/datastore';
 import {Dereferencer} from '@colonial-collections/dereferencer';
 import {Filestore} from '@colonial-collections/filestore';
-import {Item, Queue} from '@colonial-collections/queue';
 import EventEmitter from 'events';
 import fastq from 'fastq';
 import {setTimeout} from 'node:timers/promises';
@@ -59,7 +59,7 @@ export class DereferenceStorer extends EventEmitter {
     this.logger.info(`Storing ${items.length} items from the queue`);
     let numberOfProcessedResources = 0;
 
-    const save = async (item: Item) => {
+    const save = async (item: QueueItem) => {
       const quadStream = await this.dereferencer.getResource(item.iri);
       await this.filestore.save({iri: item.iri, quadStream});
       await opts.queue.remove(item.id);

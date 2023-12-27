@@ -1,5 +1,5 @@
+import {Queue, QueueItem} from '@colonial-collections/datastore';
 import {Filestore} from '@colonial-collections/filestore';
-import {Item, Queue} from '@colonial-collections/queue';
 import {SparqlGenerator} from '@colonial-collections/sparql-generator';
 import EventEmitter from 'events';
 import fastq from 'fastq';
@@ -55,7 +55,7 @@ export class SparqlStorer extends EventEmitter {
     this.logger.info(`Storing ${items.length} items from the queue`);
     let numberOfProcessedResources = 0;
 
-    const save = async (item: Item) => {
+    const save = async (item: QueueItem) => {
       const quadStream = await this.generator.getResource(item.iri);
       await this.filestore.save({iri: item.iri, quadStream});
       await opts.queue.remove(item.id);
