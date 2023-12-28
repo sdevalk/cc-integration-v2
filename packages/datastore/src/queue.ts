@@ -1,4 +1,5 @@
 import {Connection} from './connection.js';
+import {Registry} from './registry.js';
 import {Database, QueueItem, NewQueueItem} from './types.js';
 import {Kysely} from 'kysely';
 import {z} from 'zod';
@@ -12,7 +13,7 @@ export type QueueConstructorOptions = z.input<typeof constructorOptionsSchema>;
 
 const getAllOptionsSchema = z
   .object({
-    topic: z.string().optional(),
+    type: z.string().optional(),
     limit: z.number().int().min(1).optional(),
   })
   .default({});
@@ -21,7 +22,7 @@ export type GetAllOptions = z.input<typeof getAllOptionsSchema>;
 
 const sizeOptionsSchema = z
   .object({
-    topic: z.string().optional(),
+    type: z.string().optional(),
   })
   .default({});
 
@@ -30,12 +31,14 @@ export type SizeOptions = z.input<typeof sizeOptionsSchema>;
 export class Queue {
   private db: Kysely<Database>;
   private readonly maxRetryCount: number;
+  private readonly registry: Registry;
 
   constructor(options: QueueConstructorOptions) {
     const opts = constructorOptionsSchema.parse(options);
 
     this.db = opts.connection.db;
     this.maxRetryCount = opts.maxRetryCount;
+    this.registry = new Registry({connection: opts.connection});
   }
 
   async push(item: NewQueueItem) {
@@ -48,6 +51,11 @@ export class Queue {
 
   async remove(id: number) {
     await this.db.deleteFrom('queue').where('id', '=', id).execute();
+  }
+
+  async processed(item: QueueItem) {
+    await this.remove(item.id);
+    await this.registry.save({iri: item.iri, type: item.type});
   }
 
   async retry(item: QueueItem) {
@@ -75,8 +83,8 @@ export class Queue {
       .orderBy('created_at asc') // FIFO
       .selectAll();
 
-    if (opts.topic !== undefined) {
-      query = query.where('topic', '=', opts.topic);
+    if (opts.type !== undefined) {
+      query = query.where('type', '=', opts.type);
     }
 
     if (opts.limit !== undefined) {
@@ -93,12 +101,12 @@ export class Queue {
       .selectFrom('queue')
       .select(eb => eb.fn.count<number>('id').as('count'));
 
-    if (opts.topic !== undefined) {
-      query = query.where('topic', '=', opts.topic);
+    if (opts.type !== undefined) {
+      query = query.where('type', '=', opts.type);
     }
 
-    const record = await query.executeTakeFirstOrThrow();
+    const result = await query.executeTakeFirstOrThrow();
 
-    return record.count;
+    return result.count;
   }
 }

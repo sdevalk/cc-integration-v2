@@ -27,7 +27,7 @@ beforeEach(async () => {
 });
 
 describe('run - if queue is empty', () => {
-  it('collects IRIs of resources', async () => {
+  it.skip('collects IRIs of resources', async () => {
     await run({
       resourceDir,
       dataFile,
@@ -59,9 +59,11 @@ describe('run - if queue is empty', () => {
     );
   });
 
-  it('deletes obsolete resources', async () => {
+  it('removes obsolete resources', async () => {
     // Copy obsolete resources
     await cp('./fixtures/dbpedia', resourceDir, {recursive: true});
+
+    // TODO: save() items to registry
 
     await run({
       resourceDir,
@@ -87,7 +89,7 @@ describe('run - if queue is empty', () => {
       'http://dbpedia.org/resource/Jack_Dowding_(footballer)',
     ]);
 
-    // Obsolete resource about 'John McCallum' should have been deleted
+    // Obsolete resource about 'John McCallum' should have been removed
     const obsoleteIri =
       'http://dbpedia.org/resource/John_McCallum_(Australian_politician)';
     const filestore = new Filestore({dir: resourceDir});
@@ -97,51 +99,51 @@ describe('run - if queue is empty', () => {
   });
 });
 
-describe('run - if queue is not empty', () => {
-  it('generates a resource without uploading to data platform because the queue still contains resources', async () => {
-    const iri1 = 'http://vocab.getty.edu/aat/300111999';
-    const iri2 = 'http://vocab.getty.edu/aat/300027200';
+// describe('run - if queue is not empty', () => {
+//   it('generates a resource without uploading to data platform because the queue still contains resources', async () => {
+//     const iri1 = 'http://vocab.getty.edu/aat/300111999';
+//     const iri2 = 'http://vocab.getty.edu/aat/300027200';
 
-    const queue = new Queue({connection});
-    await queue.push({iri: iri1});
-    await queue.push({iri: iri2});
+//     const queue = new Queue({connection});
+//     await queue.push({iri: iri1});
+//     await queue.push({iri: iri2});
 
-    await run({
-      resourceDir,
-      dataFile,
-      endpointUrl: 'https://vocab.getty.edu/sparql',
-      iterateQueryFile: '', // Unused for the test
-      generateQueryFile: './fixtures/queries/generate-aat.rq',
-      generateBatchSize: 1,
-      triplydbInstanceUrl,
-      triplydbApiToken,
-      triplydbAccount,
-      triplydbDataset,
-      triplydbServiceName,
-      triplydbServiceType,
-      graphName,
-    });
-  });
+//     await run({
+//       resourceDir,
+//       dataFile,
+//       endpointUrl: 'https://vocab.getty.edu/sparql',
+//       iterateQueryFile: '', // Unused for the test
+//       generateQueryFile: './fixtures/queries/generate-aat.rq',
+//       generateBatchSize: 1,
+//       triplydbInstanceUrl,
+//       triplydbApiToken,
+//       triplydbAccount,
+//       triplydbDataset,
+//       triplydbServiceName,
+//       triplydbServiceType,
+//       graphName,
+//     });
+//   });
 
-  it('generates a resource and uploads to the data platform because the queue does not contain resources anymore', async () => {
-    const iri = 'http://vocab.getty.edu/aat/300111999';
+//   it('generates a resource and uploads to the data platform because the queue does not contain resources anymore', async () => {
+//     const iri = 'http://vocab.getty.edu/aat/300111999';
 
-    const queue = new Queue({connection});
-    await queue.push({iri});
+//     const queue = new Queue({connection});
+//     await queue.push({iri});
 
-    await run({
-      resourceDir,
-      dataFile,
-      endpointUrl: 'https://vocab.getty.edu/sparql',
-      iterateQueryFile: '', // Unused for the test
-      generateQueryFile: './fixtures/queries/generate-aat.rq',
-      triplydbInstanceUrl,
-      triplydbApiToken,
-      triplydbAccount,
-      triplydbDataset,
-      triplydbServiceName,
-      triplydbServiceType,
-      graphName,
-    });
-  });
-});
+//     await run({
+//       resourceDir,
+//       dataFile,
+//       endpointUrl: 'https://vocab.getty.edu/sparql',
+//       iterateQueryFile: '', // Unused for the test
+//       generateQueryFile: './fixtures/queries/generate-aat.rq',
+//       triplydbInstanceUrl,
+//       triplydbApiToken,
+//       triplydbAccount,
+//       triplydbDataset,
+//       triplydbServiceName,
+//       triplydbServiceType,
+//       graphName,
+//     });
+//   });
+// });

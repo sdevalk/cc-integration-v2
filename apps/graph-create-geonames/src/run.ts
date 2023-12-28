@@ -4,9 +4,9 @@ import {getLogger} from '@colonial-collections/common';
 import {Connection, Queue} from '@colonial-collections/datastore';
 import {
   checkQueue,
-  deleteObsoleteResources,
   finalize,
   iterate,
+  removeObsoleteResources,
   upload,
 } from '@colonial-collections/xstate-actors';
 import {join} from 'node:path';
@@ -82,7 +82,7 @@ export async function run(input: Input) {
     },
     actors: {
       checkQueue,
-      deleteObsoleteResources,
+      removeObsoleteResources,
       dereference,
       fileIterate,
       finalize,
@@ -109,7 +109,7 @@ export async function run(input: Input) {
           src: 'checkQueue',
           input: ({context}) => ({
             queue: context.queue,
-            topic: 'locations',
+            type: 'locations',
           }),
           onDone: {
             target: 'checkCountriesQueue',
@@ -125,7 +125,7 @@ export async function run(input: Input) {
           src: 'checkQueue',
           input: ({context}) => ({
             queue: context.queue,
-            topic: 'countries',
+            type: 'countries',
           }),
           onDone: {
             target: 'evaluateQueues',
@@ -166,20 +166,20 @@ export async function run(input: Input) {
               input: ({context}) => ({
                 ...context,
                 queue: context.queue,
-                topic: 'locations',
+                type: 'locations',
                 iterateQueryFile: context.locationsIterateQueryFile,
               }),
-              onDone: 'deleteObsoleteLocations',
+              onDone: 'removeObsoleteLocations',
             },
           },
-          deleteObsoleteLocations: {
+          removeObsoleteLocations: {
             invoke: {
-              id: 'deleteObsoleteLocations',
-              src: 'deleteObsoleteResources',
+              id: 'removeObsoleteLocations',
+              src: 'removeObsoleteResources',
               input: ({context}) => ({
                 ...context,
                 queue: context.queue,
-                topic: 'locations',
+                type: 'locations',
                 resourceDir: context.locationsResourceDir,
               }),
               onDone: '#main.finalize',
@@ -197,7 +197,7 @@ export async function run(input: Input) {
               input: ({context}) => ({
                 ...context,
                 queue: context.queue,
-                topic: 'locations',
+                type: 'locations',
                 resourceDir: context.locationsResourceDir,
               }),
               onDone: 'checkLocationsQueue',
@@ -209,7 +209,7 @@ export async function run(input: Input) {
               src: 'checkQueue',
               input: ({context}) => ({
                 queue: context.queue,
-                topic: 'locations',
+                type: 'locations',
               }),
               onDone: {
                 target: 'evaluateLocationsQueue',
@@ -242,21 +242,21 @@ export async function run(input: Input) {
               input: ({context}) => ({
                 ...context,
                 queue: context.queue,
-                topic: 'countries',
+                type: 'countries',
                 resourceDir: context.locationsResourceDir,
                 iterateQueryFile: context.countriesIterateQueryFile,
               }),
-              onDone: 'deleteObsoleteCountries',
+              onDone: 'removeObsoleteCountries',
             },
           },
-          deleteObsoleteCountries: {
+          removeObsoleteCountries: {
             invoke: {
-              id: 'deleteObsoleteCountries',
-              src: 'deleteObsoleteResources',
+              id: 'removeObsoleteCountries',
+              src: 'removeObsoleteResources',
               input: ({context}) => ({
                 ...context,
                 queue: context.queue,
-                topic: 'countries',
+                type: 'countries',
                 resourceDir: context.countriesResourceDir,
               }),
               onDone: '#main.finalize',
@@ -274,7 +274,7 @@ export async function run(input: Input) {
               input: ({context}) => ({
                 ...context,
                 queue: context.queue,
-                topic: 'countries',
+                type: 'countries',
                 resourceDir: context.countriesResourceDir,
               }),
               onDone: 'checkCountriesQueue',
@@ -286,7 +286,7 @@ export async function run(input: Input) {
               src: 'checkQueue',
               input: ({context}) => ({
                 queue: context.queue,
-                topic: 'countries',
+                type: 'countries',
               }),
               onDone: {
                 target: 'evaluateCountriesQueue',

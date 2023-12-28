@@ -46,7 +46,7 @@ describe('run - if queue is empty', () => {
     });
 
     const queue = new Queue({connection});
-    const items = await queue.getAll({topic: 'locations'});
+    const items = await queue.getAll({type: 'locations'});
     const iris = items.map(item => item.iri);
 
     // This can change if the source data changes
@@ -111,8 +111,8 @@ describe('run - if queue contains locations', () => {
     const iri2 = 'https://sws.geonames.org/5323799/';
 
     const queue = new Queue({connection});
-    await queue.push({iri: iri1, topic: 'locations'});
-    await queue.push({iri: iri2, topic: 'locations'});
+    await queue.push({iri: iri1, type: 'locations'});
+    await queue.push({iri: iri2, type: 'locations'});
 
     await run({
       resourceDir,
@@ -142,7 +142,7 @@ describe('run - if queue does not contain locations', () => {
     const iri = 'https://sws.geonames.org/2759794/';
 
     const queue = new Queue({connection});
-    await queue.push({iri, topic: 'locations'});
+    await queue.push({iri, type: 'locations'});
 
     await run({
       resourceDir,
@@ -160,7 +160,7 @@ describe('run - if queue does not contain locations', () => {
       graphName,
     });
 
-    const items = await queue.getAll({topic: 'countries'});
+    const items = await queue.getAll({type: 'countries'});
     const iris = items.map(item => item.iri);
 
     // This can change if the source data changes
@@ -169,14 +169,14 @@ describe('run - if queue does not contain locations', () => {
     );
   });
 
-  it('deletes obsolete countries', async () => {
+  it('removes obsolete countries', async () => {
     // Copy obsolete countries
     await cp('./fixtures/geonames/countries', countriesDir, {recursive: true});
 
     const iri = 'https://sws.geonames.org/2759794/';
 
     const queue = new Queue({connection});
-    await queue.push({iri, topic: 'locations'});
+    await queue.push({iri, type: 'locations'});
 
     await run({
       resourceDir,
@@ -193,7 +193,7 @@ describe('run - if queue does not contain locations', () => {
       graphName,
     });
 
-    // Obsolete resource about 'Germany' should have been deleted
+    // Obsolete resource about 'Germany' should have been removed
     const obsoleteIri = 'https://sws.geonames.org/2921044/';
     const filestore = new Filestore({dir: countriesDir});
     const pathOfObsoleteIri = filestore.createPathFromIri(obsoleteIri);
@@ -208,8 +208,8 @@ describe('run - if queue contains countries', () => {
     const iri2 = 'https://sws.geonames.org/6252001/';
 
     const queue = new Queue({connection});
-    await queue.push({iri: iri1, topic: 'countries'});
-    await queue.push({iri: iri2, topic: 'countries'});
+    await queue.push({iri: iri1, type: 'countries'});
+    await queue.push({iri: iri2, type: 'countries'});
 
     await run({
       resourceDir,
@@ -237,7 +237,7 @@ describe('run - if queue contains countries', () => {
     const iri = 'https://sws.geonames.org/953987/';
 
     const queue = new Queue({connection});
-    await queue.push({iri, topic: 'countries'});
+    await queue.push({iri, type: 'countries'});
 
     await run({
       resourceDir,

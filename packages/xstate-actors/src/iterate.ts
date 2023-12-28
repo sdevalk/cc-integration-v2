@@ -10,7 +10,7 @@ const inputSchema = z.object({
     message: 'logger must be defined',
   }),
   queue: z.instanceof(Queue),
-  topic: z.string().optional(),
+  type: z.string().optional(),
   endpointUrl: z.string(),
   iterateQueryFile: z.string(),
   iterateWaitBetweenRequests: z.number().optional(),
@@ -27,7 +27,7 @@ export const iterate = fromPromise(async ({input}: {input: IterateInput}) => {
     `Collecting IRIs from SPARQL endpoint "${opts.endpointUrl}"`
   );
 
-  const save = async (iri: string) => opts.queue.push({iri, topic: opts.topic});
+  const save = async (iri: string) => opts.queue.push({iri, type: opts.type});
   const iteratorQueue = fastq.promise(save, 1); // Concurrency
   const query = await readFile(opts.iterateQueryFile, 'utf-8');
 

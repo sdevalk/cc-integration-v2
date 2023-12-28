@@ -1,9 +1,9 @@
 import {generate} from './generate.js';
 import {getLogger} from '@colonial-collections/common';
-import {Connection, Queue} from '@colonial-collections/datastore';
+import {Connection, Queue, Registry} from '@colonial-collections/datastore';
 import {
   checkQueue,
-  deleteObsoleteResources,
+  removeObsoleteResources,
   finalize,
   iterate,
   upload,
@@ -42,6 +42,7 @@ export async function run(input: Input) {
 
   const connection = await Connection.new({path: opts.dataFile});
   const queue = new Queue({connection});
+  const registry = new Registry({connection});
 
   /*
     High-level workflow:
@@ -61,14 +62,15 @@ export async function run(input: Input) {
         logger: pino.Logger;
         queue: Queue;
         queueSize: number;
+        registry: Registry;
       };
     },
     actors: {
       checkQueue,
-      deleteObsoleteResources,
       finalize,
       generate,
       iterate,
+      removeObsoleteResources,
       upload,
     },
   }).createMachine({
@@ -80,6 +82,7 @@ export async function run(input: Input) {
       logger: getLogger(),
       queue,
       queueSize: 0,
+      registry,
     }),
     states: {
       checkQueue: {
@@ -114,13 +117,13 @@ export async function run(input: Input) {
               id: 'iterate',
               src: 'iterate',
               input: ({context}) => context,
-              onDone: 'deleteObsoleteResources',
+              onDone: 'removeObsoleteResources',
             },
           },
-          deleteObsoleteResources: {
+          removeObsoleteResources: {
             invoke: {
-              id: 'deleteObsoleteResources',
-              src: 'deleteObsoleteResources',
+              id: 'removeObsoleteResources',
+              src: 'removeObsoleteResources',
               input: ({context}) => context,
               onDone: '#main.finalize',
             },

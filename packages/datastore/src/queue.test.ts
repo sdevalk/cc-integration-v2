@@ -1,5 +1,6 @@
 import {Connection} from './connection.js';
 import {Queue} from './queue.js';
+import {Registry} from './registry.js';
 import {join} from 'node:path';
 import {setTimeout} from 'node:timers/promises';
 import {rimraf} from 'rimraf';
@@ -106,6 +107,29 @@ describe('remove', async () => {
   });
 });
 
+describe('processed', async () => {
+  it('processes an item', async () => {
+    const queue = new Queue({connection});
+    const iri = 'https://example.org';
+
+    const item = await queue.push({iri});
+
+    await queue.processed(item);
+
+    const queuedItems = await queue.getAll();
+
+    // Removed from queue
+    expect(queuedItems.length).toBe(0);
+
+    const registry = new Registry({connection});
+    const registeredItems = await registry.getAll();
+
+    // Added to registry
+    expect(registeredItems.length).toBe(1);
+    expect(registeredItems[0].iri).toEqual(iri);
+  });
+});
+
 describe('getAll', async () => {
   it('gets all items, sorted by date of creation', async () => {
     const queue = new Queue({connection});
@@ -135,14 +159,14 @@ describe('getAll', async () => {
     expect(items[0].id).toEqual(1);
   });
 
-  it('gets the items belonging to a specific topic', async () => {
+  it('gets the items belonging to a specific type', async () => {
     const queue = new Queue({connection});
     const iri = 'https://example.org';
 
-    await queue.push({iri, topic: 'topic1'});
+    await queue.push({iri, type: 'type1'});
     await queue.push({iri});
 
-    const items = await queue.getAll({topic: 'topic1'});
+    const items = await queue.getAll({type: 'type1'});
 
     expect(items.length).toBe(1);
     expect(items[0].id).toEqual(1);
@@ -161,14 +185,14 @@ describe('size', async () => {
     expect(size).toBe(1);
   });
 
-  it('gets the number of items belonging to a specific topic', async () => {
+  it('gets the number of items belonging to a specific type', async () => {
     const queue = new Queue({connection});
     const iri = 'https://example.org';
 
-    await queue.push({iri, topic: 'topic1'});
+    await queue.push({iri, type: 'type1'});
     await queue.push({iri});
 
-    const size = await queue.size({topic: 'topic1'});
+    const size = await queue.size({type: 'type1'});
 
     expect(size).toBe(1);
   });

@@ -4,7 +4,7 @@ import {z} from 'zod';
 
 const inputSchema = z.object({
   queue: z.instanceof(Queue),
-  topic: z.string().optional(),
+  type: z.string().optional(),
 });
 
 export type CheckQueueInput = z.input<typeof inputSchema>;
@@ -13,6 +13,6 @@ export const checkQueue = fromPromise(
   async ({input}: {input: CheckQueueInput}) => {
     const opts = inputSchema.parse(input);
 
-    return opts.queue.size({topic: opts.topic});
+    return opts.queue.size({type: opts.type});
   }
 );

@@ -24,7 +24,7 @@ describe('new', () => {
     const db = connection.db;
 
     // Simple check for table existence
-    const tables = ['queue'];
+    const tables = ['queue', 'registry'];
     for (const table of tables) {
       const items = await db
         // @ts-expect-error:TS2769
