@@ -99,7 +99,7 @@ describe('run - if queue is empty', () => {
 });
 
 describe('run - if queue is not empty', () => {
-  it('processes a resource without uploading to data platform because the queue still contains resources', async () => {
+  it('generates a resource without uploading to data platform because the queue still contains resources', async () => {
     const iri1 = 'http://vocab.getty.edu/aat/300111999';
     const iri2 = 'http://vocab.getty.edu/aat/300027200';
 
@@ -124,7 +124,7 @@ describe('run - if queue is not empty', () => {
     });
   });
 
-  it('processes all resources and uploads to the data platform because the queue does not contain resources anymore', async () => {
+  it('generates a resource and uploads to the data platform because the queue does not contain resources anymore', async () => {
     const iri = 'http://vocab.getty.edu/aat/300111999';
 
     const queue = new Queue({connection});

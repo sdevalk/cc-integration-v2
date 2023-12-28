@@ -13,6 +13,7 @@ let countriesConnection: Connection;
 const tmpDir = './tmp/integration';
 const resourceDir = join(tmpDir, 'resources');
 const locationsDir = join(resourceDir, 'locations');
+const countriesDir = join(resourceDir, 'countries');
 const dataDir = join(tmpDir, 'data');
 const triplydbInstanceUrl = env.TRIPLYDB_INSTANCE_URL as string;
 const triplydbApiToken = env.TRIPLYDB_API_TOKEN as string;
@@ -31,7 +32,7 @@ beforeEach(async () => {
   countriesConnection = await Connection.new({path: countriesDataFile});
 });
 
-describe.skip('run - if locations and countries queues are empty', () => {
+describe('run - if locations and countries queues are empty', () => {
   it('collects IRIs of locations', async () => {
     await run({
       resourceDir,
@@ -80,9 +81,9 @@ describe.skip('run - if locations and countries queues are empty', () => {
     );
   });
 
-  it('deletes obsolete resources', async () => {
-    // Copy obsolete resources
-    await cp('./fixtures/geonames', locationsDir, {recursive: true});
+  it('deletes obsolete locations', async () => {
+    // Copy obsolete locations
+    await cp('./fixtures/geonames/locations', locationsDir, {recursive: true});
 
     await run({
       resourceDir,
@@ -108,7 +109,7 @@ describe.skip('run - if locations and countries queues are empty', () => {
   });
 });
 
-describe.skip('run - if locations queue is not empty', () => {
+describe('run - if locations queue is not empty', () => {
   it('dereferences a location', async () => {
     const iri1 = 'https://sws.geonames.org/2759794/';
     const iri2 = 'https://sws.geonames.org/5323799/';
@@ -173,5 +174,90 @@ describe('run - if locations queue is empty', () => {
     );
   });
 
-  // TODO: delete obsolete countries
+  it('deletes obsolete countries', async () => {
+    // Copy obsolete countries
+    await cp('./fixtures/geonames/countries', countriesDir, {recursive: true});
+
+    const iri = 'https://sws.geonames.org/2759794/';
+
+    const locationsQueue = new Queue({connection: locationsConnection});
+    await locationsQueue.push({iri});
+
+    await run({
+      resourceDir,
+      dataDir,
+      endpointUrl: 'https://dbpedia.org/sparql',
+      locationsIterateQueryFile: '', // Unused for the test
+      countriesIterateQueryFile: './fixtures/queries/iterate-countries.rq',
+      triplydbInstanceUrl,
+      triplydbApiToken,
+      triplydbAccount,
+      triplydbDataset,
+      triplydbServiceName,
+      triplydbServiceType,
+      graphName,
+    });
+
+    // Obsolete resource about 'Germany' should have been deleted
+    const obsoleteIri = 'https://sws.geonames.org/2921044/';
+    const filestore = new Filestore({dir: countriesDir});
+    const pathOfObsoleteIri = filestore.createPathFromIri(obsoleteIri);
+
+    expect(existsSync(pathOfObsoleteIri)).toBe(false);
+  });
+});
+
+describe('run - if countries queue is not empty', () => {
+  it('dereferences a country without uploading to data platform because the queue still contains countries', async () => {
+    const iri1 = 'https://sws.geonames.org/953987/';
+    const iri2 = 'https://sws.geonames.org/6252001/';
+
+    const countriesQueue = new Queue({connection: countriesConnection});
+    await countriesQueue.push({iri: iri1});
+    await countriesQueue.push({iri: iri2});
+
+    await run({
+      resourceDir,
+      dataDir,
+      endpointUrl: 'https://dbpedia.org/sparql',
+      locationsIterateQueryFile: '', // Unused for the test
+      countriesIterateQueryFile: './fixtures/queries/iterate-countries.rq',
+      dereferenceBatchSize: 1,
+      triplydbInstanceUrl,
+      triplydbApiToken,
+      triplydbAccount,
+      triplydbDataset,
+      triplydbServiceName,
+      triplydbServiceType,
+      graphName,
+    });
+
+    const filestore = new Filestore({dir: countriesDir});
+    const pathOfIri = filestore.createPathFromIri(iri1);
+
+    expect(existsSync(pathOfIri)).toBe(true);
+  });
+
+  it('dereferences a country and uploads to the data platform because the queue does not contain countries anymore', async () => {
+    const iri = 'https://sws.geonames.org/953987/';
+
+    const countriesQueue = new Queue({connection: countriesConnection});
+    await countriesQueue.push({iri});
+
+    await run({
+      resourceDir,
+      dataDir,
+      endpointUrl: 'https://dbpedia.org/sparql',
+      locationsIterateQueryFile: '', // Unused for the test
+      countriesIterateQueryFile: './fixtures/queries/iterate-countries.rq',
+      dereferenceBatchSize: 1,
+      triplydbInstanceUrl,
+      triplydbApiToken,
+      triplydbAccount,
+      triplydbDataset,
+      triplydbServiceName,
+      triplydbServiceType,
+      graphName,
+    });
+  });
 });
