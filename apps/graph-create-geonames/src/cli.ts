@@ -8,7 +8,7 @@ const cli = cac();
 cli
   .command('create', 'Create or update a graph by dereferencing GeoNames IRIs')
   .option('--resource-dir <string>', 'Directory for storing RDF resources')
-  .option('--data-dir <string>', 'Directory for the data files')
+  .option('--data-file <string>', 'File with data')
   .option('--endpoint-url <string>', 'SPARQL endpoint URL')
   .option(
     '--locations-iterate-query-file <string>',

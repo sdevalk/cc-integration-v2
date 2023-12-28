@@ -8,13 +8,12 @@ import {env} from 'node:process';
 import {rimraf} from 'rimraf';
 import {beforeEach, describe, expect, it} from 'vitest';
 
-let locationsConnection: Connection;
-let countriesConnection: Connection;
+let connection: Connection;
 const tmpDir = './tmp/integration';
 const resourceDir = join(tmpDir, 'resources');
 const locationsDir = join(resourceDir, 'locations');
 const countriesDir = join(resourceDir, 'countries');
-const dataDir = join(tmpDir, 'data');
+const dataFile = join(tmpDir, 'data.sqlite');
 const triplydbInstanceUrl = env.TRIPLYDB_INSTANCE_URL as string;
 const triplydbApiToken = env.TRIPLYDB_API_TOKEN as string;
 const triplydbAccount = env.TRIPLYDB_ACCOUNT_DEVELOPMENT as string;
@@ -26,17 +25,14 @@ const graphName = 'https://example.org/graph-create-geonames-integration';
 beforeEach(async () => {
   await rimraf(tmpDir);
   await mkdir(tmpDir, {recursive: true});
-  const locationsDataFile = join(dataDir, 'locations.sqlite');
-  locationsConnection = await Connection.new({path: locationsDataFile});
-  const countriesDataFile = join(dataDir, 'countries.sqlite');
-  countriesConnection = await Connection.new({path: countriesDataFile});
+  connection = await Connection.new({path: dataFile});
 });
 
 describe('run - if locations and countries queues are empty', () => {
   it('collects IRIs of locations', async () => {
     await run({
       resourceDir,
-      dataDir,
+      dataFile,
       endpointUrl: 'https://dbpedia.org/sparql',
       locationsIterateQueryFile: './fixtures/queries/iterate-locations.rq',
       countriesIterateQueryFile: '', // Unused for the test
@@ -49,8 +45,8 @@ describe('run - if locations and countries queues are empty', () => {
       graphName,
     });
 
-    const locationsQueue = new Queue({connection: locationsConnection});
-    const items = await locationsQueue.getAll();
+    const queue = new Queue({connection});
+    const items = await queue.getAll({topic: 'locations'});
     const iris = items.map(item => item.iri);
 
     // This can change if the source data changes
@@ -87,7 +83,7 @@ describe('run - if locations and countries queues are empty', () => {
 
     await run({
       resourceDir,
-      dataDir,
+      dataFile,
       endpointUrl: 'https://dbpedia.org/sparql',
       locationsIterateQueryFile: './fixtures/queries/iterate-locations.rq',
       countriesIterateQueryFile: '', // Unused for the test
@@ -114,13 +110,13 @@ describe('run - if locations queue is not empty', () => {
     const iri1 = 'https://sws.geonames.org/2759794/';
     const iri2 = 'https://sws.geonames.org/5323799/';
 
-    const locationsQueue = new Queue({connection: locationsConnection});
-    await locationsQueue.push({iri: iri1});
-    await locationsQueue.push({iri: iri2});
+    const queue = new Queue({connection});
+    await queue.push({iri: iri1, topic: 'locations'});
+    await queue.push({iri: iri2, topic: 'locations'});
 
     await run({
       resourceDir,
-      dataDir,
+      dataFile,
       endpointUrl: 'https://dbpedia.org/sparql',
       locationsIterateQueryFile: '', // Unused for the test
       countriesIterateQueryFile: './fixtures/queries/iterate-countries.rq',
@@ -145,12 +141,12 @@ describe('run - if locations queue is empty', () => {
   it('collects IRIs of countries', async () => {
     const iri = 'https://sws.geonames.org/2759794/';
 
-    const locationsQueue = new Queue({connection: locationsConnection});
-    await locationsQueue.push({iri});
+    const queue = new Queue({connection});
+    await queue.push({iri, topic: 'locations'});
 
     await run({
       resourceDir,
-      dataDir,
+      dataFile,
       endpointUrl: 'https://dbpedia.org/sparql',
       locationsIterateQueryFile: '', // Unused for the test
       countriesIterateQueryFile: './fixtures/queries/iterate-countries.rq',
@@ -164,8 +160,7 @@ describe('run - if locations queue is empty', () => {
       graphName,
     });
 
-    const countriesQueue = new Queue({connection: countriesConnection});
-    const items = await countriesQueue.getAll();
+    const items = await queue.getAll({topic: 'countries'});
     const iris = items.map(item => item.iri);
 
     // This can change if the source data changes
@@ -180,12 +175,12 @@ describe('run - if locations queue is empty', () => {
 
     const iri = 'https://sws.geonames.org/2759794/';
 
-    const locationsQueue = new Queue({connection: locationsConnection});
-    await locationsQueue.push({iri});
+    const queue = new Queue({connection});
+    await queue.push({iri, topic: 'locations'});
 
     await run({
       resourceDir,
-      dataDir,
+      dataFile,
       endpointUrl: 'https://dbpedia.org/sparql',
       locationsIterateQueryFile: '', // Unused for the test
       countriesIterateQueryFile: './fixtures/queries/iterate-countries.rq',
@@ -212,13 +207,13 @@ describe('run - if countries queue is not empty', () => {
     const iri1 = 'https://sws.geonames.org/953987/';
     const iri2 = 'https://sws.geonames.org/6252001/';
 
-    const countriesQueue = new Queue({connection: countriesConnection});
-    await countriesQueue.push({iri: iri1});
-    await countriesQueue.push({iri: iri2});
+    const queue = new Queue({connection});
+    await queue.push({iri: iri1, topic: 'countries'});
+    await queue.push({iri: iri2, topic: 'countries'});
 
     await run({
       resourceDir,
-      dataDir,
+      dataFile,
       endpointUrl: 'https://dbpedia.org/sparql',
       locationsIterateQueryFile: '', // Unused for the test
       countriesIterateQueryFile: './fixtures/queries/iterate-countries.rq',
@@ -241,12 +236,12 @@ describe('run - if countries queue is not empty', () => {
   it('dereferences a country and uploads to the data platform because the queue does not contain countries anymore', async () => {
     const iri = 'https://sws.geonames.org/953987/';
 
-    const countriesQueue = new Queue({connection: countriesConnection});
-    await countriesQueue.push({iri});
+    const queue = new Queue({connection});
+    await queue.push({iri, topic: 'countries'});
 
     await run({
       resourceDir,
-      dataDir,
+      dataFile,
       endpointUrl: 'https://dbpedia.org/sparql',
       locationsIterateQueryFile: '', // Unused for the test
       countriesIterateQueryFile: './fixtures/queries/iterate-countries.rq',

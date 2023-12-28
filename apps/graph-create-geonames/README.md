@@ -8,7 +8,7 @@ Creates or updates a graph by dereferencing GeoNames IRIs
 
     ./dist/cli.js create \
       --resource-dir ./tmp/geonames/resources \
-      --data-dir ./tmp/geonames/data \
+      --data-file ./tmp/geonames/data.sqlite \
       --endpoint-url "https://dbpedia.org/sparql/" \
       --locations-iterate-query-file ./fixtures/queries/iterate-locations.rq \
       --countries-iterate-query-file ./fixtures/queries/iterate-countries.rq \

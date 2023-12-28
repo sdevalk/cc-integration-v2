@@ -14,7 +14,7 @@ import {z} from 'zod';
 
 const inputSchema = z.object({
   resourceDir: z.string(),
-  dataDir: z.string(),
+  dataFile: z.string(),
   endpointUrl: z.string(),
   locationsIterateQueryFile: z.string(),
   countriesIterateQueryFile: z.string(),
@@ -45,18 +45,13 @@ const inputSchema = z.object({
 
 export type Input = z.input<typeof inputSchema>;
 
-async function getQueue(dataFile: string) {
-  const connection = await Connection.new({path: dataFile});
-  const queue = new Queue({connection});
-
-  return queue;
-}
-
 export async function run(input: Input) {
   const opts = inputSchema.parse(input);
 
-  const locationsQueue = await getQueue(join(opts.dataDir, 'locations.sqlite'));
-  const countriesQueue = await getQueue(join(opts.dataDir, 'countries.sqlite'));
+  const connection = await Connection.new({path: opts.dataFile});
+  const queue = new Queue({connection});
+  // const locationsQueue = await getQueue(join(opts.dataDir, 'locations.sqlite'));
+  // const countriesQueue = await getQueue(join(opts.dataDir, 'countries.sqlite'));
 
   /*
     High-level workflow:
@@ -79,10 +74,11 @@ export async function run(input: Input) {
         startTime: number;
         logger: pino.Logger;
         locationsResourceDir: string;
-        locationsQueue: Queue;
+        queue: Queue;
+        // locationsQueue: Queue;
         locationsQueueSize: number;
         countriesResourceDir: string;
-        countriesQueue: Queue;
+        // countriesQueue: Queue;
         countriesQueueSize: number;
       };
     },
@@ -104,8 +100,9 @@ export async function run(input: Input) {
       logger: getLogger(),
       locationsResourceDir: join(input.resourceDir, 'locations'),
       countriesResourceDir: join(input.resourceDir, 'countries'),
-      locationsQueue,
-      countriesQueue,
+      queue,
+      // locationsQueue,
+      // countriesQueue,
       locationsQueueSize: 0,
       countriesQueueSize: 0,
     }),
@@ -115,7 +112,9 @@ export async function run(input: Input) {
           id: 'checkLocationsQueue',
           src: 'checkQueue',
           input: ({context}) => ({
-            queue: context.locationsQueue,
+            // queue: context.locationsQueue,
+            queue: context.queue,
+            topic: 'locations',
           }),
           onDone: {
             target: 'checkCountriesQueue',
@@ -130,7 +129,9 @@ export async function run(input: Input) {
           id: 'checkCountriesQueue',
           src: 'checkQueue',
           input: ({context}) => ({
-            queue: context.countriesQueue,
+            // queue: context.countriesQueue,
+            queue: context.queue,
+            topic: 'countries',
           }),
           onDone: {
             target: 'evaluateQueues',
@@ -170,7 +171,9 @@ export async function run(input: Input) {
               src: 'iterate',
               input: ({context}) => ({
                 ...context,
-                queue: context.locationsQueue,
+                // queue: context.locationsQueue,
+                queue: context.queue,
+                topic: 'locations',
                 iterateQueryFile: context.locationsIterateQueryFile,
               }),
               onDone: 'deleteObsoleteLocations',
@@ -182,7 +185,9 @@ export async function run(input: Input) {
               src: 'deleteObsoleteResources',
               input: ({context}) => ({
                 ...context,
-                queue: context.locationsQueue,
+                // queue: context.locationsQueue,
+                queue: context.queue,
+                topic: 'locations',
                 resourceDir: context.locationsResourceDir,
               }),
               onDone: '#main.finalize',
@@ -199,7 +204,9 @@ export async function run(input: Input) {
               src: 'dereference',
               input: ({context}) => ({
                 ...context,
-                queue: context.locationsQueue,
+                // queue: context.locationsQueue,
+                queue: context.queue,
+                topic: 'locations',
                 resourceDir: context.locationsResourceDir,
               }),
               onDone: 'checkLocationsQueue',
@@ -210,7 +217,9 @@ export async function run(input: Input) {
               id: 'checkLocationsQueue',
               src: 'checkQueue',
               input: ({context}) => ({
-                queue: context.locationsQueue,
+                // queue: context.locationsQueue,
+                queue: context.queue,
+                topic: 'locations',
               }),
               onDone: {
                 target: 'evaluateLocationsQueue',
@@ -242,7 +251,9 @@ export async function run(input: Input) {
               src: 'fileIterate',
               input: ({context}) => ({
                 ...context,
-                queue: context.countriesQueue,
+                // queue: context.countriesQueue,
+                queue: context.queue,
+                topic: 'countries',
                 resourceDir: context.locationsResourceDir,
                 iterateQueryFile: context.countriesIterateQueryFile,
               }),
@@ -255,7 +266,9 @@ export async function run(input: Input) {
               src: 'deleteObsoleteResources',
               input: ({context}) => ({
                 ...context,
-                queue: context.countriesQueue,
+                // queue: context.countriesQueue,
+                queue: context.queue,
+                topic: 'countries',
                 resourceDir: context.countriesResourceDir,
               }),
               onDone: '#main.finalize',
@@ -272,7 +285,9 @@ export async function run(input: Input) {
               src: 'dereference',
               input: ({context}) => ({
                 ...context,
-                queue: context.countriesQueue,
+                // queue: context.countriesQueue,
+                queue: context.queue,
+                topic: 'countries',
                 resourceDir: context.countriesResourceDir,
               }),
               onDone: 'checkCountriesQueue',
@@ -283,8 +298,9 @@ export async function run(input: Input) {
               id: 'checkCountriesQueue',
               src: 'checkQueue',
               input: ({context}) => ({
-                ...context,
-                queue: context.countriesQueue,
+                // queue: context.countriesQueue,
+                queue: context.queue,
+                topic: 'countries',
               }),
               onDone: {
                 target: 'evaluateCountriesQueue',

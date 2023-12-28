@@ -27,7 +27,6 @@ export class Connection {
 
         const db = new SQLite(opts.path);
         db.pragma('journal_mode = WAL');
-        db.pragma('auto_vacuum = FULL'); // Shrink database when data is deleted
         return db;
       },
     });

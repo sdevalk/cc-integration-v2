@@ -8,6 +8,7 @@ const inputSchema = z.object({
     message: 'logger must be defined',
   }),
   queue: z.instanceof(Queue),
+  topic: z.string().optional(),
   resourceDir: z.string(),
 });
 
@@ -22,7 +23,7 @@ export const deleteObsoleteResources = fromPromise(
     opts.logger.info(`Deleting obsolete resources in "${opts.resourceDir}"`);
 
     // Beware: if the queue is empty all existing resources on file will be deleted
-    const items = await opts.queue.getAll();
+    const items = await opts.queue.getAll({topic: opts.topic});
     const filestore = new Filestore({dir: opts.resourceDir});
 
     const hashesOfCurrentIris = items.map(item =>

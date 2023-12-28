@@ -12,11 +12,20 @@ export type QueueConstructorOptions = z.input<typeof constructorOptionsSchema>;
 
 const getAllOptionsSchema = z
   .object({
+    topic: z.string().optional(),
     limit: z.number().int().min(1).optional(),
   })
   .default({});
 
 export type GetAllOptions = z.input<typeof getAllOptionsSchema>;
+
+const sizeOptionsSchema = z
+  .object({
+    topic: z.string().optional(),
+  })
+  .default({});
+
+export type SizeOptions = z.input<typeof sizeOptionsSchema>;
 
 export class Queue {
   private db: Kysely<Database>;
@@ -66,6 +75,10 @@ export class Queue {
       .orderBy('created_at asc') // FIFO
       .selectAll();
 
+    if (opts.topic !== undefined) {
+      query = query.where('topic', '=', opts.topic);
+    }
+
     if (opts.limit !== undefined) {
       query = query.limit(opts.limit);
     }
@@ -73,17 +86,19 @@ export class Queue {
     return query.execute();
   }
 
-  async size() {
-    const record = await this.db
+  async size(options?: SizeOptions) {
+    const opts = sizeOptionsSchema.parse(options);
+
+    let query = this.db
       .selectFrom('queue')
-      .select(eb => eb.fn.count<number>('id').as('count'))
-      .executeTakeFirstOrThrow();
+      .select(eb => eb.fn.count<number>('id').as('count'));
+
+    if (opts.topic !== undefined) {
+      query = query.where('topic', '=', opts.topic);
+    }
+
+    const record = await query.executeTakeFirstOrThrow();
 
     return record.count;
-  }
-
-  async isEmpty() {
-    const size = await this.size();
-    return size === 0;
   }
 }

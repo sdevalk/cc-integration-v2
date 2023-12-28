@@ -6,14 +6,13 @@ import {iterate} from './iterate.js';
 import {upload} from './upload.js';
 import {getLogger} from '@colonial-collections/common';
 import {Connection, Queue} from '@colonial-collections/datastore';
-import {join} from 'node:path';
 import type {pino} from 'pino';
 import {assign, createActor, setup, toPromise} from 'xstate';
 import {z} from 'zod';
 
 const inputSchema = z.object({
   resourceDir: z.string(),
-  dataDir: z.string(),
+  dataFile: z.string(),
   endpointUrl: z.string(),
   iterateQueryFile: z.string(),
   iterateWaitBetweenRequests: z.number().default(500),
@@ -39,8 +38,7 @@ export type Input = z.input<typeof inputSchema>;
 export async function run(input: Input) {
   const opts = inputSchema.parse(input);
 
-  const dataFile = join(opts.dataDir, 'data.sqlite');
-  const connection = await Connection.new({path: dataFile});
+  const connection = await Connection.new({path: opts.dataFile});
   const queue = new Queue({connection});
 
   /*

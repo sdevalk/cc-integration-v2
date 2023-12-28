@@ -134,10 +134,23 @@ describe('getAll', async () => {
     expect(items.length).toBe(1);
     expect(items[0].id).toEqual(1);
   });
+
+  it('gets the items belonging to a specific topic', async () => {
+    const queue = new Queue({connection});
+    const iri = 'https://example.org';
+
+    await queue.push({iri, topic: 'topic1'});
+    await queue.push({iri});
+
+    const items = await queue.getAll({topic: 'topic1'});
+
+    expect(items.length).toBe(1);
+    expect(items[0].id).toEqual(1);
+  });
 });
 
 describe('size', async () => {
-  it('gets the size', async () => {
+  it('gets the number of items', async () => {
     const queue = new Queue({connection});
     const iri = 'https://example.org';
 
@@ -147,24 +160,16 @@ describe('size', async () => {
 
     expect(size).toBe(1);
   });
-});
 
-describe('isEmpty', async () => {
-  it('returns true if there are no items', async () => {
-    const queue = new Queue({connection});
-    const isEmpty = await queue.isEmpty();
-
-    expect(isEmpty).toBe(true);
-  });
-
-  it('returns false if there are items', async () => {
+  it('gets the number of items belonging to a specific topic', async () => {
     const queue = new Queue({connection});
     const iri = 'https://example.org';
 
+    await queue.push({iri, topic: 'topic1'});
     await queue.push({iri});
 
-    const isEmpty = await queue.isEmpty();
+    const size = await queue.size({topic: 'topic1'});
 
-    expect(isEmpty).toBe(false);
+    expect(size).toBe(1);
   });
 });

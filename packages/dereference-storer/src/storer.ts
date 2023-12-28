@@ -26,6 +26,7 @@ export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;
 
 const runOptionsSchema = z.object({
   queue: z.instanceof(Queue),
+  topic: z.string().optional(),
   numberOfConcurrentRequests: z.number().min(1).default(1),
   waitBetweenRequests: z.number().min(0).optional(),
   batchSize: z.number().min(1).default(1000),
@@ -55,7 +56,11 @@ export class DereferenceStorer extends EventEmitter {
   async run(options: RunOptions) {
     const opts = runOptionsSchema.parse(options);
 
-    const items = await opts.queue.getAll({limit: opts.batchSize});
+    const items = await opts.queue.getAll({
+      limit: opts.batchSize,
+      topic: opts.topic,
+    });
+
     this.logger.info(`Storing ${items.length} items from the queue`);
     let numberOfProcessedResources = 0;
 
