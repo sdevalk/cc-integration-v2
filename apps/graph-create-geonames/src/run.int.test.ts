@@ -28,7 +28,7 @@ beforeEach(async () => {
   connection = await Connection.new({path: dataFile});
 });
 
-describe('run - if locations and countries queues are empty', () => {
+describe('run - if queue is empty', () => {
   it('collects IRIs of locations', async () => {
     await run({
       resourceDir,
@@ -105,7 +105,7 @@ describe('run - if locations and countries queues are empty', () => {
   });
 });
 
-describe('run - if locations queue is not empty', () => {
+describe('run - if queue contains locations', () => {
   it('dereferences a location', async () => {
     const iri1 = 'https://sws.geonames.org/2759794/';
     const iri2 = 'https://sws.geonames.org/5323799/';
@@ -137,7 +137,7 @@ describe('run - if locations queue is not empty', () => {
   });
 });
 
-describe('run - if locations queue is empty', () => {
+describe('run - if queue does not contain locations', () => {
   it('collects IRIs of countries', async () => {
     const iri = 'https://sws.geonames.org/2759794/';
 
@@ -202,7 +202,7 @@ describe('run - if locations queue is empty', () => {
   });
 });
 
-describe('run - if countries queue is not empty', () => {
+describe('run - if queue contains countries', () => {
   it('dereferences a country without uploading to data platform because the queue still contains countries', async () => {
     const iri1 = 'https://sws.geonames.org/953987/';
     const iri2 = 'https://sws.geonames.org/6252001/';

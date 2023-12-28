@@ -12,12 +12,12 @@ const inputSchema = z.object({
   resourceDir: z.string(),
 });
 
-export type Input = z.input<typeof inputSchema>;
+export type DeleteObsoleteInput = z.input<typeof inputSchema>;
 
 // Compare the queued IRIs with those previously stored on file,
 // removing resources that have become obsolete
 export const deleteObsoleteResources = fromPromise(
-  async ({input}: {input: Input}) => {
+  async ({input}: {input: DeleteObsoleteInput}) => {
     const opts = inputSchema.parse(input);
 
     opts.logger.info(`Deleting obsolete resources in "${opts.resourceDir}"`);

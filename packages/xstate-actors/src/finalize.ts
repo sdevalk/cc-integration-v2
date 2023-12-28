@@ -9,9 +9,9 @@ const inputSchema = z.object({
   startTime: z.number(),
 });
 
-export type Input = z.input<typeof inputSchema>;
+export type FinalizeInput = z.input<typeof inputSchema>;
 
-export const finalize = fromPromise(async ({input}: {input: Input}) => {
+export const finalize = fromPromise(async ({input}: {input: FinalizeInput}) => {
   const opts = inputSchema.parse(input);
 
   const finishTime = Date.now();

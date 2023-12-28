@@ -18,9 +18,9 @@ const inputSchema = z.object({
   iterateNumberOfIrisPerRequest: z.number().optional(),
 });
 
-export type Input = z.input<typeof inputSchema>;
+export type IterateInput = z.input<typeof inputSchema>;
 
-export const iterate = fromPromise(async ({input}: {input: Input}) => {
+export const iterate = fromPromise(async ({input}: {input: IterateInput}) => {
   const opts = inputSchema.parse(input);
 
   opts.logger.info(

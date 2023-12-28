@@ -17,9 +17,9 @@ const inputSchema = z.object({
   tempDir: z.string().optional(),
 });
 
-export type Input = z.input<typeof inputSchema>;
+export type UploadInput = z.input<typeof inputSchema>;
 
-export const upload = fromPromise(async ({input}: {input: Input}) => {
+export const upload = fromPromise(async ({input}: {input: UploadInput}) => {
   const opts = inputSchema.parse(input);
 
   const triplyDb = await TriplyDb.new({

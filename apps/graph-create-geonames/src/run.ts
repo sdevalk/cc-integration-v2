@@ -1,12 +1,14 @@
-import {checkQueue} from './check-queue.js';
-import {deleteObsoleteResources} from './delete-obsolete.js';
 import {dereference} from './dereference.js';
 import {fileIterate} from './file-iterate.js';
-import {finalize} from './finalize.js';
-import {iterate} from './iterate.js';
-import {upload} from './upload.js';
 import {getLogger} from '@colonial-collections/common';
 import {Connection, Queue} from '@colonial-collections/datastore';
+import {
+  checkQueue,
+  deleteObsoleteResources,
+  finalize,
+  iterate,
+  upload,
+} from '@colonial-collections/xstate-actors';
 import {join} from 'node:path';
 import type {pino} from 'pino';
 import {assign, createActor, setup, toPromise} from 'xstate';
@@ -50,20 +52,18 @@ export async function run(input: Input) {
 
   const connection = await Connection.new({path: opts.dataFile});
   const queue = new Queue({connection});
-  // const locationsQueue = await getQueue(join(opts.dataDir, 'locations.sqlite'));
-  // const countriesQueue = await getQueue(join(opts.dataDir, 'countries.sqlite'));
 
   /*
     High-level workflow:
-    If locationsQueue is empty and countriesQueue is empty: (start a new run)
+    If locations queue is empty and countries queue is empty: (start a new run)
       Collect IRIs of locations
-    If locationsQueue is not empty:
+    If locations queue is not empty:
       Update locations by dereferencing IRIs
-      If locationsQueue is empty:
+      If locations queue is empty:
         Collect IRIs of countries
-    If countriesQueue is not empty:
+    If countries queue is not empty:
       Update countries by dereferencing IRIs
-      If countriesQueue is empty:
+      If countries queue is empty:
         Upload to data platform
   */
 
@@ -73,12 +73,10 @@ export async function run(input: Input) {
       context: Input & {
         startTime: number;
         logger: pino.Logger;
-        locationsResourceDir: string;
         queue: Queue;
-        // locationsQueue: Queue;
+        locationsResourceDir: string;
         locationsQueueSize: number;
         countriesResourceDir: string;
-        // countriesQueue: Queue;
         countriesQueueSize: number;
       };
     },
@@ -98,12 +96,10 @@ export async function run(input: Input) {
       ...input,
       startTime: Date.now(),
       logger: getLogger(),
-      locationsResourceDir: join(input.resourceDir, 'locations'),
-      countriesResourceDir: join(input.resourceDir, 'countries'),
       queue,
-      // locationsQueue,
-      // countriesQueue,
+      locationsResourceDir: join(input.resourceDir, 'locations'),
       locationsQueueSize: 0,
+      countriesResourceDir: join(input.resourceDir, 'countries'),
       countriesQueueSize: 0,
     }),
     states: {
@@ -112,7 +108,6 @@ export async function run(input: Input) {
           id: 'checkLocationsQueue',
           src: 'checkQueue',
           input: ({context}) => ({
-            // queue: context.locationsQueue,
             queue: context.queue,
             topic: 'locations',
           }),
@@ -129,7 +124,6 @@ export async function run(input: Input) {
           id: 'checkCountriesQueue',
           src: 'checkQueue',
           input: ({context}) => ({
-            // queue: context.countriesQueue,
             queue: context.queue,
             topic: 'countries',
           }),
@@ -171,7 +165,6 @@ export async function run(input: Input) {
               src: 'iterate',
               input: ({context}) => ({
                 ...context,
-                // queue: context.locationsQueue,
                 queue: context.queue,
                 topic: 'locations',
                 iterateQueryFile: context.locationsIterateQueryFile,
@@ -185,7 +178,6 @@ export async function run(input: Input) {
               src: 'deleteObsoleteResources',
               input: ({context}) => ({
                 ...context,
-                // queue: context.locationsQueue,
                 queue: context.queue,
                 topic: 'locations',
                 resourceDir: context.locationsResourceDir,
@@ -204,7 +196,6 @@ export async function run(input: Input) {
               src: 'dereference',
               input: ({context}) => ({
                 ...context,
-                // queue: context.locationsQueue,
                 queue: context.queue,
                 topic: 'locations',
                 resourceDir: context.locationsResourceDir,
@@ -217,7 +208,6 @@ export async function run(input: Input) {
               id: 'checkLocationsQueue',
               src: 'checkQueue',
               input: ({context}) => ({
-                // queue: context.locationsQueue,
                 queue: context.queue,
                 topic: 'locations',
               }),
@@ -251,7 +241,6 @@ export async function run(input: Input) {
               src: 'fileIterate',
               input: ({context}) => ({
                 ...context,
-                // queue: context.countriesQueue,
                 queue: context.queue,
                 topic: 'countries',
                 resourceDir: context.locationsResourceDir,
@@ -266,7 +255,6 @@ export async function run(input: Input) {
               src: 'deleteObsoleteResources',
               input: ({context}) => ({
                 ...context,
-                // queue: context.countriesQueue,
                 queue: context.queue,
                 topic: 'countries',
                 resourceDir: context.countriesResourceDir,
@@ -285,7 +273,6 @@ export async function run(input: Input) {
               src: 'dereference',
               input: ({context}) => ({
                 ...context,
-                // queue: context.countriesQueue,
                 queue: context.queue,
                 topic: 'countries',
                 resourceDir: context.countriesResourceDir,
@@ -298,7 +285,6 @@ export async function run(input: Input) {
               id: 'checkCountriesQueue',
               src: 'checkQueue',
               input: ({context}) => ({
-                // queue: context.countriesQueue,
                 queue: context.queue,
                 topic: 'countries',
               }),

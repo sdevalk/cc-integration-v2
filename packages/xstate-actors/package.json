@@ -1,32 +1,28 @@
 {
-  "name": "@colonial-collections/graph-create-geonames",
+  "name": "@colonial-collections/xstate-actors",
   "version": "1.0.0",
   "type": "module",
   "private": true,
   "license": "MIT",
-  "exports": "./dist/cli.js",
+  "exports": "./dist/index.js",
   "scripts": {
     "build": "tsup",
     "test": "vitest --coverage",
-    "test:once": "vitest --run"
+    "test:once": "vitest --run --passWithNoTests"
   },
   "dependencies": {
-    "@colonial-collections/common": "*",
+    "@colonial-collections/filestore": "*",
     "@colonial-collections/datastore": "*",
-    "@colonial-collections/sparql-file-iterator": "*",
-    "@colonial-collections/dereference-storer": "*",
-    "@colonial-collections/xstate-actors": "*",
+    "@colonial-collections/sparql-iterator": "*",
+    "@colonial-collections/triplydb": "*",
     "fastq": "1.15.0",
-    "cac": "6.7.14",
+    "pretty-ms": "8.0.0",
     "xstate": "5.3.1",
     "zod": "3.22.4"
   },
-  "devDependencies": {
-    "@colonial-collections/tsconfig": "*"
-  },
   "tsup": {
     "entry": [
-      "src/cli.ts"
+      "src/index.ts"
     ],
     "format": "esm",
     "splitting": false,
