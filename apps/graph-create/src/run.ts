@@ -1,11 +1,13 @@
-import {checkQueue} from './check-queue.js';
-import {deleteObsoleteResources} from './delete-obsolete.js';
-import {finalize} from './finalize.js';
 import {generate} from './generate.js';
-import {iterate} from './iterate.js';
-import {upload} from './upload.js';
 import {getLogger} from '@colonial-collections/common';
 import {Connection, Queue} from '@colonial-collections/datastore';
+import {
+  checkQueue,
+  deleteObsoleteResources,
+  finalize,
+  iterate,
+  upload,
+} from '@colonial-collections/xstate-actors';
 import type {pino} from 'pino';
 import {assign, createActor, setup, toPromise} from 'xstate';
 import {z} from 'zod';
@@ -64,9 +66,9 @@ export async function run(input: Input) {
     actors: {
       checkQueue,
       deleteObsoleteResources,
+      finalize,
       generate,
       iterate,
-      finalize,
       upload,
     },
   }).createMachine({

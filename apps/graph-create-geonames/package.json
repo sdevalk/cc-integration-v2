@@ -16,8 +16,8 @@
     "@colonial-collections/sparql-file-iterator": "*",
     "@colonial-collections/dereference-storer": "*",
     "@colonial-collections/xstate-actors": "*",
-    "fastq": "1.15.0",
     "cac": "6.7.14",
+    "fastq": "1.15.0",
     "xstate": "5.3.1",
     "zod": "3.22.4"
   },

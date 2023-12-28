@@ -84,9 +84,9 @@ export async function run(input: Input) {
       checkQueue,
       deleteObsoleteResources,
       dereference,
-      iterate,
       fileIterate,
       finalize,
+      iterate,
       upload,
     },
   }).createMachine({
