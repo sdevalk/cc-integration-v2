@@ -1,6 +1,6 @@
 import {SparqlStorer} from './storer.js';
+import {Connection, Queue} from '@colonial-collections/datastore';
 import {Filestore} from '@colonial-collections/filestore';
-import {Queue} from '@colonial-collections/queue';
 import {existsSync} from 'node:fs';
 import {mkdir} from 'node:fs/promises';
 import {join} from 'node:path';
@@ -8,9 +8,10 @@ import {pino} from 'pino';
 import {rimraf} from 'rimraf';
 import {beforeEach, describe, expect, it} from 'vitest';
 
+let connection: Connection;
 const tmpDir = './tmp';
 const resourceDir = join(tmpDir, 'resources');
-const queueFile = join(tmpDir, 'queue.sqlite');
+const dataFile = join(tmpDir, 'data.sqlite');
 const filestore = new Filestore({dir: resourceDir});
 const query = `
   PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -30,6 +31,7 @@ const query = `
 beforeEach(async () => {
   await rimraf(tmpDir);
   await mkdir(tmpDir, {recursive: true});
+  connection = await Connection.new({path: dataFile});
 });
 
 describe('run', () => {
@@ -39,7 +41,7 @@ describe('run', () => {
     const iri1 = 'http://vocab.getty.edu/aat/300111999';
     const iri2 = 'http://vocab.getty.edu/aat/300027200';
 
-    const queue = await Queue.new({path: queueFile});
+    const queue = new Queue({connection});
     await queue.push({iri: iri1});
     await queue.push({iri: iri2});
 
@@ -75,7 +77,7 @@ describe('run', () => {
     const iri1 = 'http://vocab.getty.edu/aat/300111999';
     const iri2 = 'http://vocab.getty.edu/aat/300027200';
 
-    const queue = await Queue.new({path: queueFile});
+    const queue = new Queue({connection});
     await queue.push({iri: iri1});
     await queue.push({iri: iri2});
 
@@ -110,7 +112,7 @@ describe('run', () => {
     const iri2 = 'http://vocab.getty.edu/aat/300027200';
     const iri3 = 'http://vocab.getty.edu/aat/300266639';
 
-    const queue = await Queue.new({path: queueFile});
+    const queue = new Queue({connection});
     await queue.push({iri: iri1});
     await queue.push({iri: iri2});
     await queue.push({iri: iri3});

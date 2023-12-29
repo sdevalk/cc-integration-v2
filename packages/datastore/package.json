@@ -1,5 +1,5 @@
 {
-  "name": "@colonial-collections/sparql-storer",
+  "name": "@colonial-collections/datastore",
   "version": "1.0.0",
   "type": "module",
   "private": true,
@@ -7,24 +7,23 @@
   "exports": "./dist/index.js",
   "scripts": {
     "build": "tsup",
+    "pretest": "npm run build && cp -r ./dist/migrations/*.js ./src/migrations",
     "test": "vitest --coverage",
-    "test:once": "vitest --run"
+    "posttest": "rm -rf ./src/migrations/*.js",
+    "test:once": "npm run build && cp -r ./dist/migrations/*.js ./src/migrations && vitest --run && rm -rf ./src/migrations/*.js"
   },
   "dependencies": {
-    "@colonial-collections/common": "*",
-    "@colonial-collections/datastore": "*",
-    "@colonial-collections/filestore": "*",
-    "@colonial-collections/sparql-generator": "*",
-    "fastq": "1.15.0",
+    "better-sqlite3": "9.2.2",
+    "kysely": "0.26.3",
     "zod": "3.22.4"
   },
   "devDependencies": {
     "@colonial-collections/tsconfig": "*",
-    "pino": "8.16.2"
+    "@types/better-sqlite3": "7.6.8"
   },
   "tsup": {
     "entry": [
-      "src/index.ts"
+      "src/index.ts", "src/migrations"
     ],
     "format": "esm",
     "splitting": false,

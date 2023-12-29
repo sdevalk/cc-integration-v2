@@ -1,4 +1,4 @@
-import {Queue} from '@colonial-collections/queue';
+import {Queue} from '@colonial-collections/datastore';
 import {SparqlFileIterator} from '@colonial-collections/sparql-file-iterator';
 import fastq from 'fastq';
 import {readFile} from 'node:fs/promises';
@@ -10,6 +10,7 @@ const inputSchema = z.object({
     message: 'logger must be defined',
   }),
   queue: z.instanceof(Queue),
+  type: z.string().optional(),
   resourceDir: z.string(),
   iterateQueryFile: z.string(),
 });
@@ -21,7 +22,7 @@ export const fileIterate = fromPromise(async ({input}: {input: Input}) => {
 
   opts.logger.info(`Collecting IRIs from "${opts.resourceDir}"`);
 
-  const save = async (iri: string) => opts.queue.push({iri}); // TBD: push to specific channel, 'countries'?
+  const save = async (iri: string) => opts.queue.push({iri, type: opts.type});
   const iteratorQueue = fastq.promise(save, 1); // Concurrency
   const query = await readFile(opts.iterateQueryFile, 'utf-8');
 

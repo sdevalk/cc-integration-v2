@@ -1,18 +1,20 @@
-import {checkQueue} from './check-queue.js';
-import {deleteObsoleteResources} from './delete-obsolete.js';
-import {finalize} from './finalize.js';
 import {generate} from './generate.js';
-import {iterate} from './iterate.js';
-import {upload} from './upload.js';
 import {getLogger} from '@colonial-collections/common';
-import {Queue} from '@colonial-collections/queue';
+import {Connection, Queue, Registry} from '@colonial-collections/datastore';
+import {
+  checkQueue,
+  removeObsoleteResources,
+  finalize,
+  iterate,
+  upload,
+} from '@colonial-collections/xstate-actors';
 import type {pino} from 'pino';
 import {assign, createActor, setup, toPromise} from 'xstate';
 import {z} from 'zod';
 
 const inputSchema = z.object({
   resourceDir: z.string(),
-  queueFile: z.string(),
+  dataFile: z.string(),
   endpointUrl: z.string(),
   iterateQueryFile: z.string(),
   iterateWaitBetweenRequests: z.number().default(500),
@@ -38,7 +40,9 @@ export type Input = z.input<typeof inputSchema>;
 export async function run(input: Input) {
   const opts = inputSchema.parse(input);
 
-  const queue = await Queue.new({path: opts.queueFile});
+  const connection = await Connection.new({path: opts.dataFile});
+  const queue = new Queue({connection});
+  const registry = new Registry({connection});
 
   /*
     High-level workflow:
@@ -58,14 +62,15 @@ export async function run(input: Input) {
         logger: pino.Logger;
         queue: Queue;
         queueSize: number;
+        registry: Registry;
       };
     },
     actors: {
       checkQueue,
-      deleteObsoleteResources,
+      finalize,
       generate,
       iterate,
-      finalize,
+      removeObsoleteResources,
       upload,
     },
   }).createMachine({
@@ -77,6 +82,7 @@ export async function run(input: Input) {
       logger: getLogger(),
       queue,
       queueSize: 0,
+      registry,
     }),
     states: {
       checkQueue: {
@@ -111,13 +117,13 @@ export async function run(input: Input) {
               id: 'iterate',
               src: 'iterate',
               input: ({context}) => context,
-              onDone: 'deleteObsoleteResources',
+              onDone: 'removeObsoleteResources',
             },
           },
-          deleteObsoleteResources: {
+          removeObsoleteResources: {
             invoke: {
-              id: 'deleteObsoleteResources',
-              src: 'deleteObsoleteResources',
+              id: 'removeObsoleteResources',
+              src: 'removeObsoleteResources',
               input: ({context}) => context,
               onDone: '#main.finalize',
             },

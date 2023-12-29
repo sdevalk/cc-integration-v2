@@ -1,12 +1,14 @@
-import {checkQueue} from './check-queue.js';
-import {deleteObsoleteResources} from './delete-obsolete.js';
 import {dereference} from './dereference.js';
 import {fileIterate} from './file-iterate.js';
-import {finalize} from './finalize.js';
-import {iterate} from './iterate.js';
-import {upload} from './upload.js';
 import {getLogger} from '@colonial-collections/common';
-import {Queue} from '@colonial-collections/queue';
+import {Connection, Queue, Registry} from '@colonial-collections/datastore';
+import {
+  checkQueue,
+  finalize,
+  iterate,
+  removeObsoleteResources,
+  upload,
+} from '@colonial-collections/xstate-actors';
 import {join} from 'node:path';
 import type {pino} from 'pino';
 import {assign, createActor, setup, toPromise} from 'xstate';
@@ -14,7 +16,7 @@ import {z} from 'zod';
 
 const inputSchema = z.object({
   resourceDir: z.string(),
-  queueDir: z.string(),
+  dataFile: z.string(),
   endpointUrl: z.string(),
   locationsIterateQueryFile: z.string(),
   countriesIterateQueryFile: z.string(),
@@ -48,24 +50,21 @@ export type Input = z.input<typeof inputSchema>;
 export async function run(input: Input) {
   const opts = inputSchema.parse(input);
 
-  const locationsQueue = await Queue.new({
-    path: join(opts.queueDir, 'locations.sqlite'),
-  });
-  const countriesQueue = await Queue.new({
-    path: join(opts.queueDir, 'countries.sqlite'),
-  });
+  const connection = await Connection.new({path: opts.dataFile});
+  const queue = new Queue({connection});
+  const registry = new Registry({connection});
 
   /*
     High-level workflow:
-    If locationsQueue is empty and countriesQueue is empty: (start a new run)
+    If locations queue is empty and countries queue is empty: (start a new run)
       Collect IRIs of locations
-    If locationsQueue is not empty:
+    If locations queue is not empty:
       Update locations by dereferencing IRIs
-      If locationsQueue is empty:
+      If locations queue is empty:
         Collect IRIs of countries
-    If countriesQueue is not empty:
+    If countries queue is not empty:
       Update countries by dereferencing IRIs
-      If countriesQueue is empty:
+      If countries queue is empty:
         Upload to data platform
   */
 
@@ -75,21 +74,21 @@ export async function run(input: Input) {
       context: Input & {
         startTime: number;
         logger: pino.Logger;
+        queue: Queue;
+        registry: Registry;
         locationsResourceDir: string;
-        locationsQueue: Queue;
         locationsQueueSize: number;
         countriesResourceDir: string;
-        countriesQueue: Queue;
         countriesQueueSize: number;
       };
     },
     actors: {
       checkQueue,
-      deleteObsoleteResources,
+      removeObsoleteResources,
       dereference,
-      iterate,
       fileIterate,
       finalize,
+      iterate,
       upload,
     },
   }).createMachine({
@@ -99,11 +98,11 @@ export async function run(input: Input) {
       ...input,
       startTime: Date.now(),
       logger: getLogger(),
+      queue,
+      registry,
       locationsResourceDir: join(input.resourceDir, 'locations'),
-      countriesResourceDir: join(input.resourceDir, 'countries'),
-      locationsQueue,
-      countriesQueue,
       locationsQueueSize: 0,
+      countriesResourceDir: join(input.resourceDir, 'countries'),
       countriesQueueSize: 0,
     }),
     states: {
@@ -112,7 +111,8 @@ export async function run(input: Input) {
           id: 'checkLocationsQueue',
           src: 'checkQueue',
           input: ({context}) => ({
-            queue: context.locationsQueue,
+            queue: context.queue,
+            type: 'locations',
           }),
           onDone: {
             target: 'checkCountriesQueue',
@@ -127,7 +127,8 @@ export async function run(input: Input) {
           id: 'checkCountriesQueue',
           src: 'checkQueue',
           input: ({context}) => ({
-            queue: context.countriesQueue,
+            queue: context.queue,
+            type: 'countries',
           }),
           onDone: {
             target: 'evaluateQueues',
@@ -167,19 +168,21 @@ export async function run(input: Input) {
               src: 'iterate',
               input: ({context}) => ({
                 ...context,
-                queue: context.locationsQueue,
+                queue: context.queue,
+                type: 'locations',
                 iterateQueryFile: context.locationsIterateQueryFile,
               }),
-              onDone: 'deleteObsoleteLocations',
+              onDone: 'removeObsoleteLocations',
             },
           },
-          deleteObsoleteLocations: {
+          removeObsoleteLocations: {
             invoke: {
-              id: 'deleteObsoleteLocations',
-              src: 'deleteObsoleteResources',
+              id: 'removeObsoleteLocations',
+              src: 'removeObsoleteResources',
               input: ({context}) => ({
                 ...context,
-                queue: context.locationsQueue,
+                queue: context.queue,
+                type: 'locations',
                 resourceDir: context.locationsResourceDir,
               }),
               onDone: '#main.finalize',
@@ -196,7 +199,8 @@ export async function run(input: Input) {
               src: 'dereference',
               input: ({context}) => ({
                 ...context,
-                queue: context.locationsQueue,
+                queue: context.queue,
+                type: 'locations',
                 resourceDir: context.locationsResourceDir,
               }),
               onDone: 'checkLocationsQueue',
@@ -207,7 +211,8 @@ export async function run(input: Input) {
               id: 'checkLocationsQueue',
               src: 'checkQueue',
               input: ({context}) => ({
-                queue: context.locationsQueue,
+                queue: context.queue,
+                type: 'locations',
               }),
               onDone: {
                 target: 'evaluateLocationsQueue',
@@ -239,20 +244,22 @@ export async function run(input: Input) {
               src: 'fileIterate',
               input: ({context}) => ({
                 ...context,
-                queue: context.countriesQueue,
+                queue: context.queue,
+                type: 'countries',
                 resourceDir: context.locationsResourceDir,
                 iterateQueryFile: context.countriesIterateQueryFile,
               }),
-              onDone: 'deleteObsoleteCountries',
+              onDone: 'removeObsoleteCountries',
             },
           },
-          deleteObsoleteCountries: {
+          removeObsoleteCountries: {
             invoke: {
-              id: 'deleteObsoleteCountries',
-              src: 'deleteObsoleteResources',
+              id: 'removeObsoleteCountries',
+              src: 'removeObsoleteResources',
               input: ({context}) => ({
                 ...context,
-                queue: context.countriesQueue,
+                queue: context.queue,
+                type: 'countries',
                 resourceDir: context.countriesResourceDir,
               }),
               onDone: '#main.finalize',
@@ -269,7 +276,8 @@ export async function run(input: Input) {
               src: 'dereference',
               input: ({context}) => ({
                 ...context,
-                queue: context.countriesQueue,
+                queue: context.queue,
+                type: 'countries',
                 resourceDir: context.countriesResourceDir,
               }),
               onDone: 'checkCountriesQueue',
@@ -280,8 +288,8 @@ export async function run(input: Input) {
               id: 'checkCountriesQueue',
               src: 'checkQueue',
               input: ({context}) => ({
-                ...context,
-                queue: context.countriesQueue,
+                queue: context.queue,
+                type: 'countries',
               }),
               onDone: {
                 target: 'evaluateCountriesQueue',

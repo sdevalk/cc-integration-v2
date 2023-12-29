@@ -1,6 +1,6 @@
 import {ProgressLogger} from '@colonial-collections/common';
+import {Queue} from '@colonial-collections/datastore';
 import {DereferenceStorer} from '@colonial-collections/dereference-storer';
-import {Queue} from '@colonial-collections/queue';
 import {fromPromise} from 'xstate';
 import {z} from 'zod';
 
@@ -9,6 +9,7 @@ const inputSchema = z.object({
     message: 'logger must be defined',
   }),
   queue: z.instanceof(Queue),
+  type: z.string().optional(),
   resourceDir: z.string(),
   dereferenceCredentials: z
     .object({
@@ -51,11 +52,12 @@ export const dereference = fromPromise(async ({input}: {input: Input}) => {
 
   await storer.run({
     queue: opts.queue,
+    type: opts.type,
     numberOfConcurrentRequests: opts.dereferenceNumberOfConcurrentRequests,
     waitBetweenRequests: opts.dereferenceWaitBetweenRequests,
     batchSize: opts.dereferenceBatchSize,
   });
 
-  const queueSize = await opts.queue.size();
+  const queueSize = await opts.queue.size({type: opts.type});
   opts.logger.info(`There are ${queueSize} items left in the queue`);
 });

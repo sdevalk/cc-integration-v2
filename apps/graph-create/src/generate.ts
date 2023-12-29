@@ -1,5 +1,5 @@
 import {ProgressLogger} from '@colonial-collections/common';
-import {Queue} from '@colonial-collections/queue';
+import {Queue} from '@colonial-collections/datastore';
 import {SparqlStorer} from '@colonial-collections/sparql-storer';
 import {readFile} from 'node:fs/promises';
 import {fromPromise} from 'xstate';

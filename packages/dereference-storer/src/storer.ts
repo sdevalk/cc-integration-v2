@@ -1,6 +1,6 @@
+import {Queue, QueueItem} from '@colonial-collections/datastore';
 import {Dereferencer} from '@colonial-collections/dereferencer';
 import {Filestore} from '@colonial-collections/filestore';
-import {Item, Queue} from '@colonial-collections/queue';
 import EventEmitter from 'events';
 import fastq from 'fastq';
 import {setTimeout} from 'node:timers/promises';
@@ -26,6 +26,7 @@ export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;
 
 const runOptionsSchema = z.object({
   queue: z.instanceof(Queue),
+  type: z.string().optional(),
   numberOfConcurrentRequests: z.number().min(1).default(1),
   waitBetweenRequests: z.number().min(0).optional(),
   batchSize: z.number().min(1).default(1000),
@@ -55,14 +56,18 @@ export class DereferenceStorer extends EventEmitter {
   async run(options: RunOptions) {
     const opts = runOptionsSchema.parse(options);
 
-    const items = await opts.queue.getAll({limit: opts.batchSize});
+    const items = await opts.queue.getAll({
+      limit: opts.batchSize,
+      type: opts.type,
+    });
+
     this.logger.info(`Storing ${items.length} items from the queue`);
     let numberOfProcessedResources = 0;
 
-    const save = async (item: Item) => {
+    const save = async (item: QueueItem) => {
       const quadStream = await this.dereferencer.getResource(item.iri);
       await this.filestore.save({iri: item.iri, quadStream});
-      await opts.queue.remove(item.id);
+      await opts.queue.processed(item);
       await setTimeout(opts.waitBetweenRequests); // Try not to hurt the server or trigger its rate limiter
 
       numberOfProcessedResources++;
