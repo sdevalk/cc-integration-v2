@@ -48,14 +48,14 @@ export class Registry {
   async removeObsolete(options?: RemoveObsoleteOptions) {
     const opts = removeObsoleteOptionsSchema.parse(options);
 
-    let subQuery = this.db.selectFrom('queue').select('iri');
+    let inQueueQuery = this.db.selectFrom('queue').select('iri');
     if (opts.type !== undefined) {
-      subQuery = subQuery.where('type', '=', opts.type);
+      inQueueQuery = inQueueQuery.where('type', '=', opts.type);
     }
 
     let selectQuery = this.db
       .selectFrom('registry')
-      .where('iri', 'not in', subQuery)
+      .where('iri', 'not in', inQueueQuery)
       .selectAll();
 
     if (opts.type !== undefined) {
@@ -67,7 +67,7 @@ export class Registry {
     // Beware: if the queue is empty all existing resources will be removed
     let deleteQuery = this.db
       .deleteFrom('registry')
-      .where('iri', 'not in', subQuery);
+      .where('iri', 'not in', inQueueQuery);
 
     if (opts.type !== undefined) {
       deleteQuery = deleteQuery.where('type', '=', opts.type);
