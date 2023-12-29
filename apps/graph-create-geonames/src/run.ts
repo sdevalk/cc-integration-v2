@@ -1,7 +1,7 @@
 import {dereference} from './dereference.js';
 import {fileIterate} from './file-iterate.js';
 import {getLogger} from '@colonial-collections/common';
-import {Connection, Queue} from '@colonial-collections/datastore';
+import {Connection, Queue, Registry} from '@colonial-collections/datastore';
 import {
   checkQueue,
   finalize,
@@ -52,6 +52,7 @@ export async function run(input: Input) {
 
   const connection = await Connection.new({path: opts.dataFile});
   const queue = new Queue({connection});
+  const registry = new Registry({connection});
 
   /*
     High-level workflow:
@@ -74,6 +75,7 @@ export async function run(input: Input) {
         startTime: number;
         logger: pino.Logger;
         queue: Queue;
+        registry: Registry;
         locationsResourceDir: string;
         locationsQueueSize: number;
         countriesResourceDir: string;
@@ -97,6 +99,7 @@ export async function run(input: Input) {
       startTime: Date.now(),
       logger: getLogger(),
       queue,
+      registry,
       locationsResourceDir: join(input.resourceDir, 'locations'),
       locationsQueueSize: 0,
       countriesResourceDir: join(input.resourceDir, 'countries'),

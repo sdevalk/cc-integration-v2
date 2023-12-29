@@ -1,5 +1,5 @@
 import {run} from './run.js';
-import {Connection, Queue} from '@colonial-collections/datastore';
+import {Connection, Queue, Registry} from '@colonial-collections/datastore';
 import {Filestore} from '@colonial-collections/filestore';
 import {existsSync} from 'node:fs';
 import {cp, mkdir} from 'node:fs/promises';
@@ -77,9 +77,14 @@ describe('run - if queue is empty', () => {
     );
   });
 
-  it('deletes obsolete locations', async () => {
+  it('removes obsolete locations', async () => {
     // Copy obsolete locations
     await cp('./fixtures/geonames/locations', locationsDir, {recursive: true});
+
+    const obsoleteIri = 'https://sws.geonames.org/5024159/';
+
+    const registry = new Registry({connection});
+    await registry.save({iri: obsoleteIri, type: 'locations'});
 
     await run({
       resourceDir,
@@ -97,7 +102,6 @@ describe('run - if queue is empty', () => {
     });
 
     // Obsolete resource about 'Delft' should have been deleted
-    const obsoleteIri = 'https://sws.geonames.org/5024159/';
     const filestore = new Filestore({dir: locationsDir});
     const pathOfObsoleteIri = filestore.createPathFromIri(obsoleteIri);
 
@@ -173,6 +177,11 @@ describe('run - if queue does not contain locations', () => {
     // Copy obsolete countries
     await cp('./fixtures/geonames/countries', countriesDir, {recursive: true});
 
+    const obsoleteIri = 'https://sws.geonames.org/2921044/';
+
+    const registry = new Registry({connection});
+    await registry.save({iri: obsoleteIri, type: 'countries'});
+
     const iri = 'https://sws.geonames.org/2759794/';
 
     const queue = new Queue({connection});
@@ -194,7 +203,6 @@ describe('run - if queue does not contain locations', () => {
     });
 
     // Obsolete resource about 'Germany' should have been removed
-    const obsoleteIri = 'https://sws.geonames.org/2921044/';
     const filestore = new Filestore({dir: countriesDir});
     const pathOfObsoleteIri = filestore.createPathFromIri(obsoleteIri);
 
