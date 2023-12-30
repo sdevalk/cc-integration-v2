@@ -31,7 +31,8 @@ export type NewRegistryItem = Insertable<RegistryTable>;
 
 export interface RunsTable {
   id: Generated<number>;
-  started_at: ColumnType<Date, string, never>;
+  identifier: ColumnType<string, string, string>;
+  started_at: ColumnType<string, string, never>;
   created_at: ColumnType<Date, string | undefined, never>;
   updated_at: ColumnType<Date, string | undefined, string | undefined>;
 }

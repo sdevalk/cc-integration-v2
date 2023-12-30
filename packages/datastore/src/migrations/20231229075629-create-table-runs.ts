@@ -6,6 +6,7 @@ export async function up(db: Kysely<Database>) {
     .createTable('runs')
     .addColumn('id', 'integer', col => col.primaryKey().notNull())
     .addColumn('started_at', 'text', col => col.notNull())
+    .addColumn('identifier', 'text', col => col.notNull())
     .addColumn('created_at', 'text', col =>
       col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull()
     )

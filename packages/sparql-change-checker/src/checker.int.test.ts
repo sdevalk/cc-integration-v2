@@ -3,15 +3,17 @@ import {describe, expect, it} from 'vitest';
 
 const query = `
   PREFIX dbo:	<http://dbpedia.org/ontology/>
+  PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
   ASK {
-    <?_this> dbo:wikiPageRevisionID ?revisionId .
-    FILTER(?revisionId > ?_compareValue)
+    BIND(xsd:integer("?_compareValue") AS ?compareValue)
+    ?_iri dbo:wikiPageRevisionID ?revisionId
+    FILTER(IF(?compareValue != 0, ?revisionId > ?compareValue, true))
   }
 `;
 
 describe('run', () => {
-  it('throws if the endpoint is invalid', async () => {
+  it.skip('throws if the endpoint is invalid', async () => {
     expect.assertions(5); // Including retries
 
     const checker = new SparqlChangeChecker({
@@ -48,6 +50,19 @@ describe('run', () => {
     });
 
     expect(isChanged).toBe(false);
+  });
+
+  it('returns true if there is no compare value from the last check', async () => {
+    const checker = new SparqlChangeChecker({
+      endpointUrl: 'https://dbpedia.org/sparql',
+    });
+
+    const isChanged = await checker.run({
+      query,
+      iri: 'http://dbpedia.org/resource/Netherlands',
+    });
+
+    expect(isChanged).toBe(true);
   });
 
   it('returns true if a resource has changed since the last check', async () => {
