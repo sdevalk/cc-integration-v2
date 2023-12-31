@@ -10,6 +10,10 @@ cli
   .option('--resource-dir <string>', 'Directory for storing RDF resources')
   .option('--data-file <string>', 'File with data')
   .option('--endpoint-url <string>', 'SPARQL endpoint URL')
+  .option(
+    '--dataset-id [string]',
+    'IRI of the dataset to check for modifications'
+  )
   .option('--iterate-query-file <string>', 'File with a SPARQL query')
   .option(
     '--iterate-wait-between-requests [number]',

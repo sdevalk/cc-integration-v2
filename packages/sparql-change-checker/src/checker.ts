@@ -14,7 +14,7 @@ export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;
 export const runOptionsSchema = z.object({
   query: z.string(),
   iri: z.string().url(),
-  compareValue: z.union([z.string(), z.number()]).optional(), // E.g. a last revision ID or a date of last check
+  compareValue: z.union([z.string(), z.number()]), // E.g. the ID of the last revision or the date of the last modification
 });
 
 export type RunOptions = z.input<typeof runOptionsSchema>;
@@ -56,10 +56,7 @@ export class SparqlChangeChecker extends EventEmitter {
     // TBD: instead of doing string replacements, generate a new SPARQL query using sparqljs?
     const query = unparsedQuery
       .replaceAll('?_iri', `<${opts.iri}>`)
-      .replaceAll(
-        '?_compareValue',
-        opts.compareValue !== undefined ? opts.compareValue.toString() : ''
-      );
+      .replaceAll('?_compareValue', opts.compareValue.toString());
 
     const run = async () => this.fetcher.fetchAsk(this.endpointUrl, query);
 

@@ -1,0 +1,6 @@
+  PREFIX dbo:	<http://dbpedia.org/ontology/>
+
+  ASK {
+    ?_iri dbo:wikiPageRevisionID ?revisionId
+    FILTER(?revisionId > ?_compareValue)
+  }

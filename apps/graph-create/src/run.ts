@@ -1,6 +1,12 @@
+import {checkIfDatasetHasBeenModified} from './check-dataset-modified.js';
 import {generate} from './generate.js';
 import {getLogger} from '@colonial-collections/common';
-import {Connection, Queue, Registry} from '@colonial-collections/datastore';
+import {
+  Connection,
+  Queue,
+  Registry,
+  Runs,
+} from '@colonial-collections/datastore';
 import {
   checkQueue,
   removeObsoleteResources,
@@ -16,6 +22,7 @@ const inputSchema = z.object({
   resourceDir: z.string(),
   dataFile: z.string(),
   endpointUrl: z.string(),
+  datasetId: z.string().optional(), // IRI of the dataset to check for modifications
   iterateQueryFile: z.string(),
   iterateWaitBetweenRequests: z.number().default(500),
   iterateTimeoutPerRequest: z.number().optional(),
@@ -43,11 +50,17 @@ export async function run(input: Input) {
   const connection = await Connection.new({path: opts.dataFile});
   const queue = new Queue({connection});
   const registry = new Registry({connection});
+  const runs = new Runs({connection});
 
   /*
     High-level workflow:
     If queue is empty: (start a new run)
-      Collect IRIs of resources
+      If dataset ID is set:
+        Check if dataset has been modified since the last run
+        If dataset has been modified:
+          Collect IRIs of resources
+      Else:
+        Collect IRIs of resources
     If queue is not empty:
       Updates resources by querying a SPARQL endpoint with their IRIs
       If queue is empty:
@@ -63,9 +76,12 @@ export async function run(input: Input) {
         queue: Queue;
         queueSize: number;
         registry: Registry;
+        runs: Runs;
+        datasetHasBeenModified: boolean;
       };
     },
     actors: {
+      checkIfDatasetHasBeenModified,
       checkQueue,
       finalize,
       generate,
@@ -83,6 +99,8 @@ export async function run(input: Input) {
       queue,
       queueSize: 0,
       registry,
+      runs,
+      datasetHasBeenModified: false,
     }),
     states: {
       checkQueue: {
@@ -101,6 +119,11 @@ export async function run(input: Input) {
       evaluateQueue: {
         always: [
           {
+            target: 'checkIfDatasetHasBeenModified',
+            guard: ({context}) =>
+              context.queueSize === 0 && context.datasetId !== undefined,
+          },
+          {
             target: 'initUpdateOfResources',
             guard: ({context}) => context.queueSize === 0,
           },
@@ -109,9 +132,36 @@ export async function run(input: Input) {
           },
         ],
       },
+      // TODO: make check for dataset part of child machine?!
+      // TODO: insert getLastRun
+      checkIfDatasetHasBeenModified: {
+        invoke: {
+          id: 'checkIfDatasetHasBeenModified',
+          src: 'checkIfDatasetHasBeenModified',
+          input: ({context}) => context,
+          onDone: {
+            target: 'evaluateCheckIfDatasetHasBeenModified',
+            actions: assign({
+              datasetHasBeenModified: ({event}) => event.output,
+            }),
+          },
+        },
+      },
+      evaluateCheckIfDatasetHasBeenModified: {
+        always: [
+          {
+            target: 'initUpdateOfResources',
+            guard: ({context}) => context.datasetHasBeenModified,
+          },
+          {
+            target: 'finalize',
+          },
+        ],
+      },
       initUpdateOfResources: {
         initial: 'iterate',
         states: {
+          // TODO: add actor: register new run, removing the old one, if any
           iterate: {
             invoke: {
               id: 'iterate',
