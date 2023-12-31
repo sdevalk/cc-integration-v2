@@ -8,5 +8,6 @@ WHERE {
       [] dbo:wikiPageRevisionID ?revisionId
     }
   }
-  BIND(?identifier > ?_currentIdentifier AS ?isChanged)
+  BIND(xsd:integer("?_currentIdentifier") AS ?currentIdentifier)
+  BIND(?identifier > ?currentIdentifier AS ?isChanged)
 }

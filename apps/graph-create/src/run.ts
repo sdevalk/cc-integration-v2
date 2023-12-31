@@ -1,4 +1,7 @@
-import {registerRun} from './register-run.js';
+import {
+  registerRun,
+  registerRunByCheckingIfRunMustRun,
+} from './register-run.js';
 import {generate} from './generate.js';
 import {getLogger} from '@colonial-collections/common';
 import {
@@ -22,9 +25,8 @@ const inputSchema = z.object({
   resourceDir: z.string(),
   dataFile: z.string(),
   endpointUrl: z.string(),
-  checkQueryFile: z.string().optional(),
-  checkTimeoutPerRequest: z.number().optional(),
-  iriToCheckForChanges: z.string().optional(),
+  mustRunQueryFile: z.string().optional(),
+  mustRunTimeout: z.number().optional(),
   iterateQueryFile: z.string(),
   iterateWaitBetweenRequests: z.number().default(500),
   iterateTimeoutPerRequest: z.number().optional(),
@@ -57,9 +59,9 @@ export async function run(input: Input) {
   /*
     High-level workflow:
     If queue is empty: (start a new run)
-      If resource IRI is set:
-        Check if resource is changed since the last run
-        If resource is changed:
+      If must run query file is set:
+        Check if run must run
+        If run must run:
           Collect IRIs of resources
       Else:
         Collect IRIs of resources
@@ -88,6 +90,7 @@ export async function run(input: Input) {
       generate,
       iterate,
       registerRun,
+      registerRunByCheckingIfRunMustRun,
       removeObsoleteResources,
       upload,
     },
@@ -121,13 +124,12 @@ export async function run(input: Input) {
       evaluateQueue: {
         always: [
           {
-            target: 'registerRun',
+            target: 'registerRunByCheckingIfRunMustRun',
             guard: ({context}) =>
-              context.queueSize === 0 &&
-              context.iriToCheckForChanges !== undefined,
+              context.queueSize === 0 && context.mustRunQueryFile !== undefined,
           },
           {
-            target: 'initUpdateOfResources',
+            target: 'registerRun',
             guard: ({context}) => context.queueSize === 0,
           },
           {
@@ -135,13 +137,15 @@ export async function run(input: Input) {
           },
         ],
       },
-      // TODO: make check for dataset part of child machine?!
-      // TODO: insert getLastRun
-      registerRun: {
+      registerRunByCheckingIfRunMustRun: {
         invoke: {
-          id: 'registerRun',
-          src: 'registerRun',
-          input: ({context}) => context,
+          id: 'registerRunByCheckingIfRunMustRun',
+          src: 'registerRunByCheckingIfRunMustRun',
+          input: ({context}) => ({
+            ...context,
+            mustRunQueryFile: context.mustRunQueryFile!,
+            mustRunTimeout: context.mustRunTimeout,
+          }),
           onDone: {
             target: 'evaluateIfRunMustRun',
             actions: assign({
@@ -161,10 +165,17 @@ export async function run(input: Input) {
           },
         ],
       },
+      registerRun: {
+        invoke: {
+          id: 'registerRun',
+          src: 'registerRun',
+          input: ({context}) => context,
+          onDone: 'initUpdateOfResources',
+        },
+      },
       initUpdateOfResources: {
         initial: 'iterate',
         states: {
-          // TODO: add actor: register new run, removing the old one, if any
           iterate: {
             invoke: {
               id: 'iterate',

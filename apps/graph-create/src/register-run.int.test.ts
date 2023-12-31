@@ -25,7 +25,6 @@ describe('registerRun', () => {
       runs,
       endpointUrl: 'https://dbpedia.org/sparql',
       mustRunQueryFile: './fixtures/queries/change-check-dbpedia.rq',
-      iriToCheckForChanges: 'http://dbpedia.org/resource/Netherlands',
     };
 
     const mustRun = await toPromise(createActor(registerRun, {input}).start());
@@ -42,7 +41,6 @@ describe('registerRun', () => {
       runs,
       endpointUrl: 'https://dbpedia.org/sparql',
       mustRunQueryFile: './fixtures/queries/change-check-dbpedia.rq',
-      iriToCheckForChanges: 'http://dbpedia.org/resource/Netherlands',
     };
 
     const mustRun = await toPromise(createActor(registerRun, {input}).start());
@@ -59,7 +57,6 @@ describe('registerRun', () => {
       runs,
       endpointUrl: 'https://dbpedia.org/sparql',
       mustRunQueryFile: './fixtures/queries/change-check-dbpedia.rq',
-      iriToCheckForChanges: 'http://dbpedia.org/resource/Netherlands',
     };
 
     const mustRun = await toPromise(createActor(registerRun, {input}).start());

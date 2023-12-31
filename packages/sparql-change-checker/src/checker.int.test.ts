@@ -3,6 +3,7 @@ import {describe, expect, it} from 'vitest';
 
 const query = `
   PREFIX dbo:	<http://dbpedia.org/ontology/>
+  PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
   SELECT ?identifier ?isChanged
   WHERE {
@@ -12,7 +13,8 @@ const query = `
         [] dbo:wikiPageRevisionID ?revisionId
       }
     }
-    BIND(?identifier > ?_currentIdentifier AS ?isChanged)
+    BIND(xsd:integer("?_currentIdentifier") AS ?currentIdentifier)
+    BIND(?identifier > ?currentIdentifier AS ?isChanged)
   }
 `;
 

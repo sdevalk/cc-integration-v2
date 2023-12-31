@@ -6,14 +6,16 @@ import {z} from 'zod';
 export const constructorOptionsSchema = z.object({
   endpointUrl: z.string().url(),
   endpointMethod: z.enum(['GET', 'POST']).default('POST'),
-  timeoutPerRequest: z.number().min(0).default(60000),
+  timeout: z.number().min(0).default(60000),
 });
 
 export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;
 
 export const runOptionsSchema = z.object({
   query: z.string(),
-  currentIdentifier: z.string(), // E.g. the ID of the last revision or the date of the last modification
+  // E.g. the ID of the last revision or the date of the last modification
+  // Not set if there is no current identifier
+  currentIdentifier: z.string().optional(),
 });
 
 export type RunOptions = z.input<typeof runOptionsSchema>;
@@ -35,7 +37,7 @@ export class SparqlChangeChecker extends EventEmitter {
     this.endpointUrl = opts.endpointUrl;
     this.fetcher = new SparqlEndpointFetcher({
       method: opts.endpointMethod,
-      timeout: opts.timeoutPerRequest,
+      timeout: opts.timeout,
     });
   }
 
@@ -60,7 +62,7 @@ export class SparqlChangeChecker extends EventEmitter {
     // TBD: instead of doing string replacements, generate a new SPARQL query using sparqljs?
     const query = unparsedQuery.replaceAll(
       '?_currentIdentifier',
-      opts.currentIdentifier
+      opts.currentIdentifier !== undefined ? opts.currentIdentifier : ''
     );
 
     const run = async () => this.fetcher.fetchBindings(this.endpointUrl, query);
