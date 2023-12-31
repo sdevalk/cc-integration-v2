@@ -1,4 +1,4 @@
-import {SparqlEndpointFetcher} from 'fetch-sparql-endpoint';
+import {IBindings, SparqlEndpointFetcher} from 'fetch-sparql-endpoint';
 import {EventEmitter} from 'node:events';
 import pRetry from 'p-retry';
 import {z} from 'zod';
@@ -13,11 +13,15 @@ export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;
 
 export const runOptionsSchema = z.object({
   query: z.string(),
-  iri: z.string().url(),
-  compareValue: z.union([z.string(), z.number()]), // E.g. the ID of the last revision or the date of the last modification
+  currentIdentifier: z.string(), // E.g. the ID of the last revision or the date of the last modification
 });
 
 export type RunOptions = z.input<typeof runOptionsSchema>;
+
+export type RunResponse = {
+  identifier: string | undefined;
+  isChanged: boolean;
+};
 
 export class SparqlChangeChecker extends EventEmitter {
   private readonly endpointUrl: string;
@@ -37,7 +41,7 @@ export class SparqlChangeChecker extends EventEmitter {
 
   private validateQuery(query: string) {
     // TBD: use sparqljs for validation?
-    const bindings = ['?_iri', '?_compareValue']; // Basil notation
+    const bindings = ['?identifier', '?isChanged', '?_currentIdentifier']; // Basil notation
     const hasBindings = bindings.every(
       binding => query.indexOf(binding) !== -1
     );
@@ -54,13 +58,14 @@ export class SparqlChangeChecker extends EventEmitter {
     const unparsedQuery = this.validateQuery(opts.query);
 
     // TBD: instead of doing string replacements, generate a new SPARQL query using sparqljs?
-    const query = unparsedQuery
-      .replaceAll('?_iri', `<${opts.iri}>`)
-      .replaceAll('?_compareValue', opts.compareValue.toString());
+    const query = unparsedQuery.replaceAll(
+      '?_currentIdentifier',
+      opts.currentIdentifier
+    );
 
-    const run = async () => this.fetcher.fetchAsk(this.endpointUrl, query);
+    const run = async () => this.fetcher.fetchBindings(this.endpointUrl, query);
 
-    const isChanged = await pRetry(run, {
+    const bindingsStream = await pRetry(run, {
       retries: 3,
       onFailedAttempt: err => {
         const prettyError = new Error(
@@ -71,6 +76,17 @@ export class SparqlChangeChecker extends EventEmitter {
       },
     });
 
-    return isChanged;
+    let identifier;
+    let isChanged = false;
+
+    for await (const rawBindings of bindingsStream) {
+      const bindings = rawBindings as unknown as IBindings; // TS assumes it's a string or Buffer
+      identifier = bindings.identifier.value;
+      isChanged = parseInt(bindings.isChanged.value) !== 0;
+    }
+
+    const response: RunResponse = {identifier, isChanged};
+
+    return response;
   }
 }

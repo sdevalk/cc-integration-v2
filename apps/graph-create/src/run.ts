@@ -1,4 +1,4 @@
-import {checkIfDatasetHasBeenModified} from './check-dataset-modified.js';
+import {registerRun} from './register-run.js';
 import {generate} from './generate.js';
 import {getLogger} from '@colonial-collections/common';
 import {
@@ -22,7 +22,9 @@ const inputSchema = z.object({
   resourceDir: z.string(),
   dataFile: z.string(),
   endpointUrl: z.string(),
-  datasetId: z.string().optional(), // IRI of the dataset to check for modifications
+  checkQueryFile: z.string().optional(),
+  checkTimeoutPerRequest: z.number().optional(),
+  iriToCheckForChanges: z.string().optional(),
   iterateQueryFile: z.string(),
   iterateWaitBetweenRequests: z.number().default(500),
   iterateTimeoutPerRequest: z.number().optional(),
@@ -30,7 +32,7 @@ const inputSchema = z.object({
   generateQueryFile: z.string(),
   generateWaitBetweenRequests: z.number().default(100),
   generateTimeoutPerRequest: z.number().optional(),
-  generateNumberOfConcurrentRequests: z.number().default(20), // Single-threaded
+  generateNumberOfConcurrentRequests: z.number().default(20), // Single-threaded max performance
   generateBatchSize: z.number().default(50000),
   triplydbInstanceUrl: z.string(),
   triplydbApiToken: z.string(),
@@ -55,9 +57,9 @@ export async function run(input: Input) {
   /*
     High-level workflow:
     If queue is empty: (start a new run)
-      If dataset ID is set:
-        Check if dataset has been modified since the last run
-        If dataset has been modified:
+      If resource IRI is set:
+        Check if resource is changed since the last run
+        If resource is changed:
           Collect IRIs of resources
       Else:
         Collect IRIs of resources
@@ -77,15 +79,15 @@ export async function run(input: Input) {
         queueSize: number;
         registry: Registry;
         runs: Runs;
-        datasetHasBeenModified: boolean;
+        mustRun: boolean;
       };
     },
     actors: {
-      checkIfDatasetHasBeenModified,
       checkQueue,
       finalize,
       generate,
       iterate,
+      registerRun,
       removeObsoleteResources,
       upload,
     },
@@ -100,7 +102,7 @@ export async function run(input: Input) {
       queueSize: 0,
       registry,
       runs,
-      datasetHasBeenModified: false,
+      mustRun: false,
     }),
     states: {
       checkQueue: {
@@ -119,9 +121,10 @@ export async function run(input: Input) {
       evaluateQueue: {
         always: [
           {
-            target: 'checkIfDatasetHasBeenModified',
+            target: 'registerRun',
             guard: ({context}) =>
-              context.queueSize === 0 && context.datasetId !== undefined,
+              context.queueSize === 0 &&
+              context.iriToCheckForChanges !== undefined,
           },
           {
             target: 'initUpdateOfResources',
@@ -134,24 +137,24 @@ export async function run(input: Input) {
       },
       // TODO: make check for dataset part of child machine?!
       // TODO: insert getLastRun
-      checkIfDatasetHasBeenModified: {
+      registerRun: {
         invoke: {
-          id: 'checkIfDatasetHasBeenModified',
-          src: 'checkIfDatasetHasBeenModified',
+          id: 'registerRun',
+          src: 'registerRun',
           input: ({context}) => context,
           onDone: {
-            target: 'evaluateCheckIfDatasetHasBeenModified',
+            target: 'evaluateIfRunMustRun',
             actions: assign({
-              datasetHasBeenModified: ({event}) => event.output,
+              mustRun: ({event}) => event.output,
             }),
           },
         },
       },
-      evaluateCheckIfDatasetHasBeenModified: {
+      evaluateIfRunMustRun: {
         always: [
           {
             target: 'initUpdateOfResources',
-            guard: ({context}) => context.datasetHasBeenModified,
+            guard: ({context}) => context.mustRun,
           },
           {
             target: 'finalize',

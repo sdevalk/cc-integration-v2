@@ -4,9 +4,15 @@ import {describe, expect, it} from 'vitest';
 const query = `
   PREFIX dbo:	<http://dbpedia.org/ontology/>
 
-  ASK {
-    ?_iri dbo:wikiPageRevisionID ?revisionId
-    FILTER(?revisionId > ?_compareValue)
+  SELECT ?identifier ?isChanged
+  WHERE {
+    {
+      SELECT (MAX(?revisionId) AS ?identifier)
+      WHERE {
+        [] dbo:wikiPageRevisionID ?revisionId
+      }
+    }
+    BIND(?identifier > ?_currentIdentifier AS ?isChanged)
   }
 `;
 
@@ -27,8 +33,7 @@ describe('run', () => {
     try {
       await checker.run({
         query,
-        iri: 'http://localhost',
-        compareValue: '1234',
+        currentIdentifier: '1234',
       });
     } catch (err) {
       const error = err as Error;
@@ -41,13 +46,15 @@ describe('run', () => {
       endpointUrl: 'https://dbpedia.org/sparql',
     });
 
-    const isChanged = await checker.run({
+    const response = await checker.run({
       query,
-      iri: 'http://dbpedia.org/resource/Netherlands',
-      compareValue: 1124717624 + 10000, // Revision ID. Can change if the source data changes
+      currentIdentifier: (1125038679 + 100000).toString(), // Non-existing revision ID. Changes if the source data changes
     });
 
-    expect(isChanged).toBe(false);
+    expect(response).toStrictEqual({
+      identifier: expect.stringMatching(/^\d+$/), // Revision ID
+      isChanged: false,
+    });
   });
 
   it('returns true if a resource has changed since the last check', async () => {
@@ -55,12 +62,14 @@ describe('run', () => {
       endpointUrl: 'https://dbpedia.org/sparql',
     });
 
-    const isChanged = await checker.run({
+    const response = await checker.run({
       query,
-      iri: 'http://dbpedia.org/resource/Netherlands',
-      compareValue: 1124717623, // Revision ID
+      currentIdentifier: '1124717623', // Old revision ID
     });
 
-    expect(isChanged).toBe(true);
+    expect(response).toStrictEqual({
+      identifier: expect.stringMatching(/^\d+$/), // Revision ID
+      isChanged: true,
+    });
   });
 });

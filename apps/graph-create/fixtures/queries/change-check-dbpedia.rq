@@ -1,6 +1,12 @@
-  PREFIX dbo:	<http://dbpedia.org/ontology/>
+PREFIX dbo:	<http://dbpedia.org/ontology/>
 
-  ASK {
-    ?_iri dbo:wikiPageRevisionID ?revisionId
-    FILTER(?revisionId > ?_compareValue)
+SELECT ?identifier ?isChanged
+WHERE {
+  {
+    SELECT (MAX(?revisionId) AS ?identifier)
+    WHERE {
+      [] dbo:wikiPageRevisionID ?revisionId
+    }
   }
+  BIND(?identifier > ?_currentIdentifier AS ?isChanged)
+}
