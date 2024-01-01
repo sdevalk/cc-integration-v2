@@ -12,7 +12,7 @@ const inputSchema = z.object({
   queue: z.instanceof(Queue),
   type: z.string().optional(),
   resourceDir: z.string(),
-  iterateQueryFile: z.string(),
+  queryFile: z.string(),
 });
 
 export type Input = z.input<typeof inputSchema>;
@@ -24,7 +24,7 @@ export const fileIterate = fromPromise(async ({input}: {input: Input}) => {
 
   const save = async (iri: string) => opts.queue.push({iri, type: opts.type});
   const iteratorQueue = fastq.promise(save, 1); // Concurrency
-  const query = await readFile(opts.iterateQueryFile, 'utf-8');
+  const query = await readFile(opts.queryFile, 'utf-8');
 
   const iterator = new SparqlFileIterator({
     dir: opts.resourceDir,

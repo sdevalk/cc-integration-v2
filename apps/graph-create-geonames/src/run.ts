@@ -106,6 +106,7 @@ export async function run(input: Input) {
       countriesQueueSize: 0,
     }),
     states: {
+      // State 1a
       checkLocationsQueue: {
         invoke: {
           id: 'checkLocationsQueue',
@@ -122,6 +123,7 @@ export async function run(input: Input) {
           },
         },
       },
+      // State 1b
       checkCountriesQueue: {
         invoke: {
           id: 'checkCountriesQueue',
@@ -138,6 +140,7 @@ export async function run(input: Input) {
           },
         },
       },
+      // State 1c
       evaluateQueues: {
         always: [
           {
@@ -159,22 +162,26 @@ export async function run(input: Input) {
           },
         ],
       },
+      // State 2
       initUpdateOfLocations: {
         initial: 'iterateLocations',
         states: {
+          // State 2a
           iterateLocations: {
             invoke: {
               id: 'iterateLocations',
               src: 'iterate',
               input: ({context}) => ({
                 ...context,
-                queue: context.queue,
-                type: 'locations',
-                iterateQueryFile: context.locationsIterateQueryFile,
+                queryFile: context.locationsIterateQueryFile,
+                waitBetweenRequests: context.iterateWaitBetweenRequests,
+                timeoutPerRequest: context.iterateTimeoutPerRequest,
+                numberOfIrisPerRequest: context.iterateNumberOfIrisPerRequest,
               }),
               onDone: 'removeObsoleteLocations',
             },
           },
+          // State 2b
           removeObsoleteLocations: {
             invoke: {
               id: 'removeObsoleteLocations',
@@ -190,9 +197,11 @@ export async function run(input: Input) {
           },
         },
       },
+      // State 3
       updateLocations: {
         initial: 'dereferenceLocations',
         states: {
+          // State 3a
           dereferenceLocations: {
             invoke: {
               id: 'dereferenceLocations',
@@ -202,10 +211,18 @@ export async function run(input: Input) {
                 queue: context.queue,
                 type: 'locations',
                 resourceDir: context.locationsResourceDir,
+                credentials: context.dereferenceCredentials,
+                headers: context.dereferenceHeaders,
+                waitBetweenRequests: context.dereferenceWaitBetweenRequests,
+                timeoutPerRequest: context.dereferenceWaitBetweenRequests,
+                numberOfConcurrentRequests:
+                  context.dereferenceNumberOfConcurrentRequests,
+                batchSize: context.dereferenceBatchSize,
               }),
               onDone: 'checkLocationsQueue',
             },
           },
+          // State 3b
           checkLocationsQueue: {
             invoke: {
               id: 'checkLocationsQueue',
@@ -222,6 +239,7 @@ export async function run(input: Input) {
               },
             },
           },
+          // State 3c
           evaluateLocationsQueue: {
             always: [
               {
@@ -235,9 +253,11 @@ export async function run(input: Input) {
           },
         },
       },
+      // State 4
       initUpdateOfCountries: {
         initial: 'fileIterate',
         states: {
+          // State 4a
           fileIterate: {
             invoke: {
               id: 'fileIterate',
@@ -247,11 +267,12 @@ export async function run(input: Input) {
                 queue: context.queue,
                 type: 'countries',
                 resourceDir: context.locationsResourceDir,
-                iterateQueryFile: context.countriesIterateQueryFile,
+                queryFile: context.countriesIterateQueryFile,
               }),
               onDone: 'removeObsoleteCountries',
             },
           },
+          // State 4b
           removeObsoleteCountries: {
             invoke: {
               id: 'removeObsoleteCountries',
@@ -267,9 +288,11 @@ export async function run(input: Input) {
           },
         },
       },
+      // State 5
       updateCountries: {
         initial: 'dereferenceCountries',
         states: {
+          // State 5a
           dereferenceCountries: {
             invoke: {
               id: 'dereferenceCountries',
@@ -279,10 +302,18 @@ export async function run(input: Input) {
                 queue: context.queue,
                 type: 'countries',
                 resourceDir: context.countriesResourceDir,
+                credentials: context.dereferenceCredentials,
+                headers: context.dereferenceHeaders,
+                waitBetweenRequests: context.dereferenceWaitBetweenRequests,
+                timeoutPerRequest: context.dereferenceWaitBetweenRequests,
+                numberOfConcurrentRequests:
+                  context.dereferenceNumberOfConcurrentRequests,
+                batchSize: context.dereferenceBatchSize,
               }),
               onDone: 'checkCountriesQueue',
             },
           },
+          // State 5b
           checkCountriesQueue: {
             invoke: {
               id: 'checkCountriesQueue',
@@ -299,6 +330,7 @@ export async function run(input: Input) {
               },
             },
           },
+          // State 5c
           evaluateCountriesQueue: {
             always: [
               {
@@ -312,6 +344,7 @@ export async function run(input: Input) {
               },
             ],
           },
+          // State 5d
           // This action fails if another process is already
           // uploading resources to the data platform
           upload: {
@@ -324,6 +357,7 @@ export async function run(input: Input) {
           },
         },
       },
+      // State 6
       finalize: {
         invoke: {
           id: 'finalize',

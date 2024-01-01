@@ -11,18 +11,18 @@ const inputSchema = z.object({
   queue: z.instanceof(Queue),
   type: z.string().optional(),
   resourceDir: z.string(),
-  dereferenceCredentials: z
+  credentials: z
     .object({
       type: z.literal('basic-auth'),
       username: z.string(),
       password: z.string(),
     })
     .optional(),
-  dereferenceHeaders: z.record(z.string(), z.string()).optional(),
-  dereferenceWaitBetweenRequests: z.number().optional(),
-  dereferenceTimeoutPerRequest: z.number().optional(),
-  dereferenceNumberOfConcurrentRequests: z.number().optional(),
-  dereferenceBatchSize: z.number().optional(),
+  headers: z.record(z.string(), z.string()).optional(),
+  waitBetweenRequests: z.number().optional(),
+  timeoutPerRequest: z.number().optional(),
+  numberOfConcurrentRequests: z.number().optional(),
+  batchSize: z.number().optional(),
 });
 
 export type Input = z.input<typeof inputSchema>;
@@ -35,8 +35,8 @@ export const dereference = fromPromise(async ({input}: {input: Input}) => {
   const storer = new DereferenceStorer({
     logger: opts.logger,
     resourceDir: opts.resourceDir,
-    credentials: opts.dereferenceCredentials,
-    headers: opts.dereferenceHeaders,
+    credentials: opts.credentials,
+    headers: opts.headers,
   });
 
   const progress = new ProgressLogger({logger: opts.logger});
@@ -53,9 +53,9 @@ export const dereference = fromPromise(async ({input}: {input: Input}) => {
   await storer.run({
     queue: opts.queue,
     type: opts.type,
-    numberOfConcurrentRequests: opts.dereferenceNumberOfConcurrentRequests,
-    waitBetweenRequests: opts.dereferenceWaitBetweenRequests,
-    batchSize: opts.dereferenceBatchSize,
+    numberOfConcurrentRequests: opts.numberOfConcurrentRequests,
+    waitBetweenRequests: opts.waitBetweenRequests,
+    batchSize: opts.batchSize,
   });
 
   const queueSize = await opts.queue.size({type: opts.type});
