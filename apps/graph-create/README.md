@@ -28,13 +28,14 @@ Creates or updates a graph by querying a SPARQL endpoint
       --graph-name "https://example.org/dbpedia" \
       --temp-dir ./tmp
 
-### DBpedia - with a 'must run' check
+### DBpedia - with a 'must run continue' check
 
     ./dist/cli.js create \
       --resource-dir ./tmp/dbpedia/resources \
       --data-file ./tmp/dbpedia/data.sqlite \
       --endpoint-url "https://dbpedia.org/sparql" \
-      --must-run-query-file ./fixtures/queries/must-run-check-dbpedia.rq \
+      --check-if-run-must-continue-query-file ./fixtures/queries/check-must-continue-run-dbpedia.rq \
+      --check-if-run-must-continue-timeout 300000 \
       --iterate-query-file ./fixtures/queries/iterate-dbpedia.rq \
       --iterate-wait-between-requests 100 \
       --iterate-timeout-per-request 300000 \

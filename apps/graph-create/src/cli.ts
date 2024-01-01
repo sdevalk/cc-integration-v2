@@ -10,8 +10,14 @@ cli
   .option('--resource-dir <string>', 'Directory for storing RDF resources')
   .option('--data-file <string>', 'File with data')
   .option('--endpoint-url <string>', 'SPARQL endpoint URL')
-  .option('--must-run-query-file <string>', 'File with a SPARQL query')
-  .option('--must-run-timeout [number]', 'Timeout, in milliseconds')
+  .option(
+    '--check-if-run-must-continue-query-file <string>',
+    'File with a SPARQL query'
+  )
+  .option(
+    '--check-if-run-must-continue-timeout [number]',
+    'Timeout, in milliseconds'
+  )
   .option(
     '--iri-to-check-for-changes [string]',
     'IRI of a resource to check for changes'

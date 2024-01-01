@@ -1,5 +1,10 @@
 import {run} from './run.js';
-import {Connection, Queue, Registry} from '@colonial-collections/datastore';
+import {
+  Connection,
+  Queue,
+  Registry,
+  Runs,
+} from '@colonial-collections/datastore';
 import {Filestore} from '@colonial-collections/filestore';
 import {existsSync} from 'node:fs';
 import {cp, mkdir} from 'node:fs/promises';
@@ -26,8 +31,8 @@ beforeEach(async () => {
   connection = await Connection.new({path: dataFile});
 });
 
-describe('run - if queue is empty', () => {
-  it('collects IRIs of resources', async () => {
+describe('run', () => {
+  it('registers run and collects IRIs of resources if queue is empty (states 1a, 1b, 3, 4a, 4b, 6)', async () => {
     await run({
       resourceDir,
       dataFile,
@@ -47,7 +52,7 @@ describe('run - if queue is empty', () => {
     const items = await queue.getAll();
     const iris = items.map(item => item.iri);
 
-    // This can change if the source data changes
+    // Changes if the source data changes
     expect(iris).toEqual(
       expect.arrayContaining([
         'http://dbpedia.org/resource/John_McCallum_(sports_writer)',
@@ -59,7 +64,7 @@ describe('run - if queue is empty', () => {
     );
   });
 
-  it('removes obsolete resources', async () => {
+  it('registers run and removes obsolete resources if queue is empty (states 1a, 1b, 3, 4a, 4b, 6)', async () => {
     // Copy obsolete resources
     await cp('./fixtures/dbpedia', resourceDir, {recursive: true});
 
@@ -88,7 +93,7 @@ describe('run - if queue is empty', () => {
     const items = await queue.getAll();
     const iris = items.map(item => item.iri);
 
-    // This can change if the source data changes
+    // Changes if the source data changes
     expect(iris).toEqual([
       'http://dbpedia.org/resource/Jack_Dowding_(footballer)',
     ]);
@@ -101,8 +106,66 @@ describe('run - if queue is empty', () => {
   });
 });
 
-describe('run - if queue is not empty', () => {
-  it('generates a resource without uploading to data platform because the queue still contains resources', async () => {
+describe('run', () => {
+  it('registers run and does not continue if it must not (states 1a, 1b, 2a, 2b, 6)', async () => {
+    const runs = new Runs({connection});
+    await runs.save({identifier: (1125038679 + 100000).toString()}); // Non-existing revision ID. Changes if the source data changes
+
+    await run({
+      resourceDir,
+      dataFile,
+      endpointUrl: 'https://dbpedia.org/sparql',
+      checkIfRunMustContinueQueryFile:
+        './fixtures/queries/check-must-continue-run-dbpedia.rq',
+      iterateQueryFile: '', // Unused for the test
+      generateQueryFile: '', // Unused for the test
+      triplydbInstanceUrl,
+      triplydbApiToken,
+      triplydbAccount,
+      triplydbDataset,
+      triplydbServiceName,
+      triplydbServiceType,
+      graphName,
+    });
+  });
+
+  it('registers run and continues if it must (states 1a, 1b, 2a, 2b, 4a, 4b, 6)', async () => {
+    await run({
+      resourceDir,
+      dataFile,
+      endpointUrl: 'https://dbpedia.org/sparql',
+      checkIfRunMustContinueQueryFile:
+        './fixtures/queries/check-must-continue-run-dbpedia.rq',
+      iterateQueryFile: './fixtures/queries/iterate-john-mccallum.rq',
+      generateQueryFile: '', // Unused for the test
+      triplydbInstanceUrl,
+      triplydbApiToken,
+      triplydbAccount,
+      triplydbDataset,
+      triplydbServiceName,
+      triplydbServiceType,
+      graphName,
+    });
+
+    const queue = new Queue({connection});
+    const items = await queue.getAll();
+    const iris = items.map(item => item.iri);
+
+    // Changes if the source data changes
+    expect(iris).toEqual(
+      expect.arrayContaining([
+        'http://dbpedia.org/resource/John_McCallum_(sports_writer)',
+        'http://dbpedia.org/resource/Jack_Dowding_(footballer)',
+        'http://dbpedia.org/resource/John_McCallum',
+        'http://dbpedia.org/resource/John_McCallum_(Australian_politician)',
+        'http://dbpedia.org/resource/John_McCallum_(actor)',
+      ])
+    );
+  });
+});
+
+describe('run', () => {
+  it('generates a resource if queue contains a resource (states 1a, 1b, 5a, 5b, 5c, 6)', async () => {
     const iri1 = 'http://vocab.getty.edu/aat/300111999';
     const iri2 = 'http://vocab.getty.edu/aat/300027200';
 
@@ -127,7 +190,7 @@ describe('run - if queue is not empty', () => {
     });
   });
 
-  it('generates a resource and uploads to the data platform because the queue does not contain resources anymore', async () => {
+  it('generates a resource if queue contains a resource and uploads to data platform because queue is now empty (states 1a, 1b, 5a, 5b, 5c, 5d, 6)', async () => {
     const iri = 'http://vocab.getty.edu/aat/300111999';
 
     const queue = new Queue({connection});

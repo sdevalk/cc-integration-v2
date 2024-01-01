@@ -19,34 +19,34 @@ export const registerRun = fromPromise(
 
     opts.runs.save();
 
-    return true; // 'Must run'
+    return true; // 'Must continue run'
   }
 );
 
-const registerRunByCheckingIfRunMustRunInputSchema = z.object({
+const registerRunAndCheckIfRunMustContinueInputSchema = z.object({
   logger: z.any().refine(val => val !== undefined, {
     message: 'logger must be defined',
   }),
   runs: z.instanceof(Runs),
   endpointUrl: z.string().url(),
-  mustRunQueryFile: z.string(),
-  mustRunTimeout: z.number().optional(),
+  queryFile: z.string(),
+  timeout: z.number().optional(),
 });
 
-export type RegisterRunByCheckingIfRunMustRunInput = z.input<
-  typeof registerRunByCheckingIfRunMustRunInputSchema
+export type RegisterRunAndCheckIfRunMustContinueInput = z.input<
+  typeof registerRunAndCheckIfRunMustContinueInputSchema
 >;
 
-export const registerRunByCheckingIfRunMustRun = fromPromise(
-  async ({input}: {input: RegisterRunByCheckingIfRunMustRunInput}) => {
-    const opts = registerRunByCheckingIfRunMustRunInputSchema.parse(input);
+export const registerRunAndCheckIfRunMustContinue = fromPromise(
+  async ({input}: {input: RegisterRunAndCheckIfRunMustContinueInput}) => {
+    const opts = registerRunAndCheckIfRunMustContinueInputSchema.parse(input);
 
     const lastRun = await opts.runs.getLast();
 
-    const query = await readFile(opts.mustRunQueryFile, 'utf-8');
+    const query = await readFile(opts.queryFile, 'utf-8');
     const checker = new SparqlChangeChecker({
       endpointUrl: opts.endpointUrl,
-      timeout: opts.mustRunTimeout,
+      timeout: opts.timeout,
     });
 
     const response = await checker.run({
@@ -54,14 +54,14 @@ export const registerRunByCheckingIfRunMustRun = fromPromise(
       currentIdentifier: lastRun?.identifier,
     });
 
-    const mustRun = response.isChanged;
+    const continueRun = response.isChanged;
     opts.runs.save({identifier: response.identifier});
 
     opts.logger.info(
       {response},
-      `Checking whether run must run: ${mustRun ? 'true' : 'false'}`
+      `Must run continue? ${continueRun ? 'Yes' : 'No'}`
     );
 
-    return mustRun;
+    return continueRun;
   }
 );

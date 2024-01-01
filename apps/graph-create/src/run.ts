@@ -1,6 +1,6 @@
 import {
   registerRun,
-  registerRunByCheckingIfRunMustRun,
+  registerRunAndCheckIfRunMustContinue,
 } from './register-run.js';
 import {generate} from './generate.js';
 import {getLogger} from '@colonial-collections/common';
@@ -25,8 +25,8 @@ const inputSchema = z.object({
   resourceDir: z.string(),
   dataFile: z.string(),
   endpointUrl: z.string(),
-  mustRunQueryFile: z.string().optional(),
-  mustRunTimeout: z.number().optional(),
+  checkIfRunMustContinueQueryFile: z.string().optional(),
+  checkIfRunMustContinueTimeout: z.number().optional(),
   iterateQueryFile: z.string(),
   iterateWaitBetweenRequests: z.number().default(500),
   iterateTimeoutPerRequest: z.number().optional(),
@@ -60,9 +60,9 @@ export async function run(input: Input) {
     High-level workflow:
     If queue is empty: (start a new run)
       If a 'must run' query file is set:
-        Check if run must run
-        If run must run:
-          Register run
+        Register run
+        Check if run must continue
+        If run must continue:
           Collect IRIs of resources
       Else:
         Register run
@@ -83,7 +83,7 @@ export async function run(input: Input) {
         queueSize: number;
         registry: Registry;
         runs: Runs;
-        mustRun: boolean;
+        continueRun: boolean;
       };
     },
     actors: {
@@ -92,7 +92,7 @@ export async function run(input: Input) {
       generate,
       iterate,
       registerRun,
-      registerRunByCheckingIfRunMustRun,
+      registerRunAndCheckIfRunMustContinue,
       removeObsoleteResources,
       upload,
     },
@@ -107,9 +107,10 @@ export async function run(input: Input) {
       queueSize: 0,
       registry,
       runs,
-      mustRun: false,
+      continueRun: false,
     }),
     states: {
+      // State 1a
       checkQueue: {
         invoke: {
           id: 'checkQueue',
@@ -123,12 +124,14 @@ export async function run(input: Input) {
           },
         },
       },
+      // State 1b
       evaluateQueue: {
         always: [
           {
-            target: 'registerRunByCheckingIfRunMustRun',
+            target: 'registerRunAndCheckIfRunMustContinue',
             guard: ({context}) =>
-              context.queueSize === 0 && context.mustRunQueryFile !== undefined,
+              context.queueSize === 0 &&
+              context.checkIfRunMustContinueQueryFile !== undefined,
           },
           {
             target: 'registerRun',
@@ -139,34 +142,37 @@ export async function run(input: Input) {
           },
         ],
       },
-      registerRunByCheckingIfRunMustRun: {
+      // State 2a
+      registerRunAndCheckIfRunMustContinue: {
         invoke: {
-          id: 'registerRunByCheckingIfRunMustRun',
-          src: 'registerRunByCheckingIfRunMustRun',
+          id: 'registerRunAndCheckIfRunMustContinue',
+          src: 'registerRunAndCheckIfRunMustContinue',
           input: ({context}) => ({
             ...context,
-            mustRunQueryFile: context.mustRunQueryFile!,
-            mustRunTimeout: context.mustRunTimeout,
+            queryFile: context.checkIfRunMustContinueQueryFile!,
+            timeout: context.checkIfRunMustContinueTimeout,
           }),
           onDone: {
-            target: 'evaluateIfRunMustRun',
+            target: 'evaluateIfRunMustContinue',
             actions: assign({
-              mustRun: ({event}) => event.output,
+              continueRun: ({event}) => event.output,
             }),
           },
         },
       },
-      evaluateIfRunMustRun: {
+      // State 2b
+      evaluateIfRunMustContinue: {
         always: [
           {
             target: 'initUpdateOfResources',
-            guard: ({context}) => context.mustRun,
+            guard: ({context}) => context.continueRun,
           },
           {
             target: 'finalize',
           },
         ],
       },
+      // State 3
       registerRun: {
         invoke: {
           id: 'registerRun',
@@ -175,9 +181,11 @@ export async function run(input: Input) {
           onDone: 'initUpdateOfResources',
         },
       },
+      // State 4
       initUpdateOfResources: {
         initial: 'iterate',
         states: {
+          // State 4a
           iterate: {
             invoke: {
               id: 'iterate',
@@ -186,6 +194,7 @@ export async function run(input: Input) {
               onDone: 'removeObsoleteResources',
             },
           },
+          // State 4b
           removeObsoleteResources: {
             invoke: {
               id: 'removeObsoleteResources',
@@ -196,9 +205,11 @@ export async function run(input: Input) {
           },
         },
       },
+      // State 5
       updateResources: {
         initial: 'generate',
         states: {
+          // State 5a
           generate: {
             invoke: {
               id: 'generate',
@@ -207,6 +218,7 @@ export async function run(input: Input) {
               onDone: 'checkQueue',
             },
           },
+          // State 5b
           checkQueue: {
             invoke: {
               id: 'checkQueue',
@@ -220,6 +232,7 @@ export async function run(input: Input) {
               },
             },
           },
+          // State 5c
           evaluateQueue: {
             always: [
               {
@@ -233,6 +246,7 @@ export async function run(input: Input) {
               },
             ],
           },
+          // State 5d
           // This action fails if another process is already
           // uploading resources to the data platform
           upload: {
@@ -245,6 +259,7 @@ export async function run(input: Input) {
           },
         },
       },
+      // State 6
       finalize: {
         invoke: {
           id: 'finalize',

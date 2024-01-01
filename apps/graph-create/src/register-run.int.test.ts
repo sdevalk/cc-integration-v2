@@ -1,8 +1,8 @@
 import {
-  RegisterRunByCheckingIfRunMustRunInput,
+  RegisterRunAndCheckIfRunMustContinueInput,
   RegisterRunInput,
   registerRun,
-  registerRunByCheckingIfRunMustRun,
+  registerRunAndCheckIfRunMustContinue,
 } from './register-run.js';
 import {Connection, Runs} from '@colonial-collections/datastore';
 import {join} from 'node:path';
@@ -30,63 +30,65 @@ describe('registerRun', () => {
       runs,
     };
 
-    const mustRun = await toPromise(createActor(registerRun, {input}).start());
+    const continueRun = await toPromise(
+      createActor(registerRun, {input}).start()
+    );
 
-    expect(mustRun).toBe(true);
+    expect(continueRun).toBe(true);
   });
 });
 
-describe('registerRunByCheckingIfRunMustRun', () => {
-  it('returns true if there is no last run', async () => {
+describe('registerRunAndCheckIfRunMustContinue', () => {
+  it('returns true if the run must continue because there is no last run', async () => {
     const runs = new Runs({connection});
 
-    const input: RegisterRunByCheckingIfRunMustRunInput = {
+    const input: RegisterRunAndCheckIfRunMustContinueInput = {
       logger,
       runs,
       endpointUrl: 'https://dbpedia.org/sparql',
-      mustRunQueryFile: './fixtures/queries/must-run-check-dbpedia.rq',
+      queryFile: './fixtures/queries/check-must-continue-run-dbpedia.rq',
     };
 
-    const mustRun = await toPromise(
-      createActor(registerRunByCheckingIfRunMustRun, {input}).start()
+    const continueRun = await toPromise(
+      createActor(registerRunAndCheckIfRunMustContinue, {input}).start()
     );
 
-    expect(mustRun).toBe(true);
+    expect(continueRun).toBe(true);
   });
 
-  it('returns false if the resource is not changed since the last run', async () => {
+  it('returns false if the run must not continue because the resource is not changed since the last run', async () => {
     const runs = new Runs({connection});
     await runs.save({identifier: (1125038679 + 100000).toString()}); // Non-existing revision ID. Changes if the source data changes
 
-    const input: RegisterRunByCheckingIfRunMustRunInput = {
+    const input: RegisterRunAndCheckIfRunMustContinueInput = {
       logger,
       runs,
       endpointUrl: 'https://dbpedia.org/sparql',
-      mustRunQueryFile: './fixtures/queries/must-run-check-dbpedia.rq',
+      queryFile: './fixtures/queries/check-must-continue-run-dbpedia.rq',
     };
 
-    const mustRun = await toPromise(
-      createActor(registerRunByCheckingIfRunMustRun, {input}).start()
+    const continueRun = await toPromise(
+      createActor(registerRunAndCheckIfRunMustContinue, {input}).start()
     );
 
-    expect(mustRun).toBe(false);
+    expect(continueRun).toBe(false);
   });
 
-  it('returns true if the resource is changed since the last run', async () => {
+  it('returns true if the run must continue because the resource is changed since the last run', async () => {
     const runs = new Runs({connection});
     await runs.save({identifier: '1124717623'}); // Old revision ID
 
-    const input: RegisterRunByCheckingIfRunMustRunInput = {
+    const input: RegisterRunAndCheckIfRunMustContinueInput = {
       logger,
       runs,
       endpointUrl: 'https://dbpedia.org/sparql',
-      mustRunQueryFile: './fixtures/queries/must-run-check-dbpedia.rq',
+      queryFile: './fixtures/queries/check-must-continue-run-dbpedia.rq',
     };
 
-    const mustRun = await toPromise(
-      createActor(registerRunByCheckingIfRunMustRun, {input}).start()
+    const continueRun = await toPromise(
+      createActor(registerRunAndCheckIfRunMustContinue, {input}).start()
     );
 
-    expect(mustRun).toBe(true);
+    expect(continueRun).toBe(true);
   });
 });
