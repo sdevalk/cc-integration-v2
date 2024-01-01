@@ -1,6 +1,15 @@
+import {
+  registerRun,
+  registerRunAndCheckIfRunMustContinue,
+} from './register-run.js';
 import {generate} from './generate.js';
 import {getLogger} from '@colonial-collections/common';
-import {Connection, Queue, Registry} from '@colonial-collections/datastore';
+import {
+  Connection,
+  Queue,
+  Registry,
+  Runs,
+} from '@colonial-collections/datastore';
 import {
   checkQueue,
   removeObsoleteResources,
@@ -16,6 +25,8 @@ const inputSchema = z.object({
   resourceDir: z.string(),
   dataFile: z.string(),
   endpointUrl: z.string(),
+  checkIfRunMustContinueQueryFile: z.string().optional(),
+  checkIfRunMustContinueTimeout: z.number().optional(),
   iterateQueryFile: z.string(),
   iterateWaitBetweenRequests: z.number().default(500),
   iterateTimeoutPerRequest: z.number().optional(),
@@ -23,7 +34,7 @@ const inputSchema = z.object({
   generateQueryFile: z.string(),
   generateWaitBetweenRequests: z.number().default(100),
   generateTimeoutPerRequest: z.number().optional(),
-  generateNumberOfConcurrentRequests: z.number().default(20), // Single-threaded
+  generateNumberOfConcurrentRequests: z.number().default(20), // ~ single-threaded max performance
   generateBatchSize: z.number().default(50000),
   triplydbInstanceUrl: z.string(),
   triplydbApiToken: z.string(),
@@ -43,11 +54,19 @@ export async function run(input: Input) {
   const connection = await Connection.new({path: opts.dataFile});
   const queue = new Queue({connection});
   const registry = new Registry({connection});
+  const runs = new Runs({connection});
 
   /*
     High-level workflow:
     If queue is empty: (start a new run)
-      Collect IRIs of resources
+      If a 'must run' query file is set:
+        Register run
+        Check if run must continue
+        If run must continue:
+          Collect IRIs of resources
+      Else:
+        Register run
+        Collect IRIs of resources
     If queue is not empty:
       Updates resources by querying a SPARQL endpoint with their IRIs
       If queue is empty:
@@ -63,6 +82,8 @@ export async function run(input: Input) {
         queue: Queue;
         queueSize: number;
         registry: Registry;
+        runs: Runs;
+        continueRun: boolean;
       };
     },
     actors: {
@@ -70,6 +91,8 @@ export async function run(input: Input) {
       finalize,
       generate,
       iterate,
+      registerRun,
+      registerRunAndCheckIfRunMustContinue,
       removeObsoleteResources,
       upload,
     },
@@ -83,8 +106,11 @@ export async function run(input: Input) {
       queue,
       queueSize: 0,
       registry,
+      runs,
+      continueRun: false,
     }),
     states: {
+      // State 1a
       checkQueue: {
         invoke: {
           id: 'checkQueue',
@@ -98,10 +124,17 @@ export async function run(input: Input) {
           },
         },
       },
+      // State 1b
       evaluateQueue: {
         always: [
           {
-            target: 'initUpdateOfResources',
+            target: 'registerRunAndCheckIfRunMustContinue',
+            guard: ({context}) =>
+              context.queueSize === 0 &&
+              context.checkIfRunMustContinueQueryFile !== undefined,
+          },
+          {
+            target: 'registerRun',
             guard: ({context}) => context.queueSize === 0,
           },
           {
@@ -109,9 +142,50 @@ export async function run(input: Input) {
           },
         ],
       },
+      // State 2a
+      registerRunAndCheckIfRunMustContinue: {
+        invoke: {
+          id: 'registerRunAndCheckIfRunMustContinue',
+          src: 'registerRunAndCheckIfRunMustContinue',
+          input: ({context}) => ({
+            ...context,
+            queryFile: context.checkIfRunMustContinueQueryFile!,
+            timeout: context.checkIfRunMustContinueTimeout,
+          }),
+          onDone: {
+            target: 'evaluateIfRunMustContinue',
+            actions: assign({
+              continueRun: ({event}) => event.output,
+            }),
+          },
+        },
+      },
+      // State 2b
+      evaluateIfRunMustContinue: {
+        always: [
+          {
+            target: 'initUpdateOfResources',
+            guard: ({context}) => context.continueRun,
+          },
+          {
+            target: 'finalize',
+          },
+        ],
+      },
+      // State 3
+      registerRun: {
+        invoke: {
+          id: 'registerRun',
+          src: 'registerRun',
+          input: ({context}) => context,
+          onDone: 'initUpdateOfResources',
+        },
+      },
+      // State 4
       initUpdateOfResources: {
         initial: 'iterate',
         states: {
+          // State 4a
           iterate: {
             invoke: {
               id: 'iterate',
@@ -120,6 +194,7 @@ export async function run(input: Input) {
               onDone: 'removeObsoleteResources',
             },
           },
+          // State 4b
           removeObsoleteResources: {
             invoke: {
               id: 'removeObsoleteResources',
@@ -130,9 +205,11 @@ export async function run(input: Input) {
           },
         },
       },
+      // State 5
       updateResources: {
         initial: 'generate',
         states: {
+          // State 5a
           generate: {
             invoke: {
               id: 'generate',
@@ -141,6 +218,7 @@ export async function run(input: Input) {
               onDone: 'checkQueue',
             },
           },
+          // State 5b
           checkQueue: {
             invoke: {
               id: 'checkQueue',
@@ -154,6 +232,7 @@ export async function run(input: Input) {
               },
             },
           },
+          // State 5c
           evaluateQueue: {
             always: [
               {
@@ -167,6 +246,7 @@ export async function run(input: Input) {
               },
             ],
           },
+          // State 5d
           // This action fails if another process is already
           // uploading resources to the data platform
           upload: {
@@ -179,6 +259,7 @@ export async function run(input: Input) {
           },
         },
       },
+      // State 6
       finalize: {
         invoke: {
           id: 'finalize',
