@@ -1,4 +1,9 @@
-import {RegisterRunInput, registerRun} from './register-run.js';
+import {
+  RegisterRunByCheckingIfRunMustRunInput,
+  RegisterRunInput,
+  registerRun,
+  registerRunByCheckingIfRunMustRun,
+} from './register-run.js';
 import {Connection, Runs} from '@colonial-collections/datastore';
 import {join} from 'node:path';
 import {rimraf} from 'rimraf';
@@ -17,49 +22,70 @@ beforeEach(async () => {
 });
 
 describe('registerRun', () => {
-  it('returns true if there is no last run', async () => {
+  it('returns true if the run has been registered', async () => {
     const runs = new Runs({connection});
 
     const input: RegisterRunInput = {
       logger,
       runs,
-      endpointUrl: 'https://dbpedia.org/sparql',
-      mustRunQueryFile: './fixtures/queries/change-check-dbpedia.rq',
     };
 
     const mustRun = await toPromise(createActor(registerRun, {input}).start());
 
     expect(mustRun).toBe(true);
   });
+});
 
-  it('returns false if the resource is not changed since the last run', async () => {
+describe('registerRunByCheckingIfRunMustRun', () => {
+  it('returns true if there is no last run', async () => {
     const runs = new Runs({connection});
-    await runs.save({identifier: (1124717624 + 10000).toString()}); // Revision ID. Can change if the source data changes
 
-    const input: RegisterRunInput = {
+    const input: RegisterRunByCheckingIfRunMustRunInput = {
       logger,
       runs,
       endpointUrl: 'https://dbpedia.org/sparql',
-      mustRunQueryFile: './fixtures/queries/change-check-dbpedia.rq',
+      mustRunQueryFile: './fixtures/queries/must-run-check-dbpedia.rq',
     };
 
-    const mustRun = await toPromise(createActor(registerRun, {input}).start());
+    const mustRun = await toPromise(
+      createActor(registerRunByCheckingIfRunMustRun, {input}).start()
+    );
+
+    expect(mustRun).toBe(true);
+  });
+
+  it('returns false if the resource is not changed since the last run', async () => {
+    const runs = new Runs({connection});
+    await runs.save({identifier: (1125038679 + 100000).toString()}); // Non-existing revision ID. Changes if the source data changes
+
+    const input: RegisterRunByCheckingIfRunMustRunInput = {
+      logger,
+      runs,
+      endpointUrl: 'https://dbpedia.org/sparql',
+      mustRunQueryFile: './fixtures/queries/must-run-check-dbpedia.rq',
+    };
+
+    const mustRun = await toPromise(
+      createActor(registerRunByCheckingIfRunMustRun, {input}).start()
+    );
 
     expect(mustRun).toBe(false);
   });
 
-  it('returns true if the resources is changed since the last run', async () => {
+  it('returns true if the resource is changed since the last run', async () => {
     const runs = new Runs({connection});
-    await runs.save({identifier: '1124717623'}); // Revision ID
+    await runs.save({identifier: '1124717623'}); // Old revision ID
 
-    const input: RegisterRunInput = {
+    const input: RegisterRunByCheckingIfRunMustRunInput = {
       logger,
       runs,
       endpointUrl: 'https://dbpedia.org/sparql',
-      mustRunQueryFile: './fixtures/queries/change-check-dbpedia.rq',
+      mustRunQueryFile: './fixtures/queries/must-run-check-dbpedia.rq',
     };
 
-    const mustRun = await toPromise(createActor(registerRun, {input}).start());
+    const mustRun = await toPromise(
+      createActor(registerRunByCheckingIfRunMustRun, {input}).start()
+    );
 
     expect(mustRun).toBe(true);
   });

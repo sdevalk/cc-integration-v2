@@ -19,7 +19,7 @@ export const registerRun = fromPromise(
 
     opts.runs.save();
 
-    return true;
+    return true; // 'Must run'
   }
 );
 
@@ -56,6 +56,11 @@ export const registerRunByCheckingIfRunMustRun = fromPromise(
 
     const mustRun = response.isChanged;
     opts.runs.save({identifier: response.identifier});
+
+    opts.logger.info(
+      {response},
+      `Checking whether run must run: ${mustRun ? 'true' : 'false'}`
+    );
 
     return mustRun;
   }

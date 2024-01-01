@@ -59,11 +59,13 @@ export async function run(input: Input) {
   /*
     High-level workflow:
     If queue is empty: (start a new run)
-      If must run query file is set:
+      If a 'must run' query file is set:
         Check if run must run
         If run must run:
+          Register run
           Collect IRIs of resources
       Else:
+        Register run
         Collect IRIs of resources
     If queue is not empty:
       Updates resources by querying a SPARQL endpoint with their IRIs
