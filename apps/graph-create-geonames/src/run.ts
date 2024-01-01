@@ -1,11 +1,18 @@
 import {dereference} from './dereference.js';
 import {fileIterate} from './file-iterate.js';
 import {getLogger} from '@colonial-collections/common';
-import {Connection, Queue, Registry} from '@colonial-collections/datastore';
+import {
+  Connection,
+  Queue,
+  Registry,
+  Runs,
+} from '@colonial-collections/datastore';
 import {
   checkQueue,
   finalize,
   iterate,
+  registerRun,
+  registerRunAndCheckIfRunMustContinue,
   removeObsoleteResources,
   upload,
 } from '@colonial-collections/xstate-actors';
@@ -18,6 +25,8 @@ const inputSchema = z.object({
   resourceDir: z.string(),
   dataFile: z.string(),
   endpointUrl: z.string(),
+  checkIfRunMustContinueQueryFile: z.string().optional(),
+  checkIfRunMustContinueTimeout: z.number().optional(),
   locationsIterateQueryFile: z.string(),
   countriesIterateQueryFile: z.string(),
   iterateWaitBetweenRequests: z.number().default(500),
@@ -53,11 +62,19 @@ export async function run(input: Input) {
   const connection = await Connection.new({path: opts.dataFile});
   const queue = new Queue({connection});
   const registry = new Registry({connection});
+  const runs = new Runs({connection});
 
   /*
     High-level workflow:
     If locations queue is empty and countries queue is empty: (start a new run)
-      Collect IRIs of locations
+      If a 'must run continue' query file is set:
+        Register run
+        Check if run must continue
+        If run must continue:
+          Collect IRIs of locations
+      Else:
+        Register run
+        Collect IRIs of locations
     If locations queue is not empty:
       Update locations by dereferencing IRIs
       If locations queue is empty:
@@ -76,6 +93,8 @@ export async function run(input: Input) {
         logger: pino.Logger;
         queue: Queue;
         registry: Registry;
+        runs: Runs;
+        continueRun: boolean;
         locationsResourceDir: string;
         locationsQueueSize: number;
         countriesResourceDir: string;
@@ -84,11 +103,13 @@ export async function run(input: Input) {
     },
     actors: {
       checkQueue,
-      removeObsoleteResources,
       dereference,
       fileIterate,
       finalize,
       iterate,
+      registerRun,
+      registerRunAndCheckIfRunMustContinue,
+      removeObsoleteResources,
       upload,
     },
   }).createMachine({
@@ -100,6 +121,8 @@ export async function run(input: Input) {
       logger: getLogger(),
       queue,
       registry,
+      runs,
+      continueRun: false,
       locationsResourceDir: join(input.resourceDir, 'locations'),
       locationsQueueSize: 0,
       countriesResourceDir: join(input.resourceDir, 'countries'),
@@ -144,7 +167,14 @@ export async function run(input: Input) {
       evaluateQueues: {
         always: [
           {
-            target: 'initUpdateOfLocations',
+            target: 'registerRunAndCheckIfRunMustContinue',
+            guard: ({context}) =>
+              context.locationsQueueSize === 0 &&
+              context.countriesQueueSize === 0 &&
+              context.checkIfRunMustContinueQueryFile !== undefined,
+          },
+          {
+            target: 'registerRun',
             guard: ({context}) =>
               context.locationsQueueSize === 0 &&
               context.countriesQueueSize === 0,
@@ -162,17 +192,57 @@ export async function run(input: Input) {
           },
         ],
       },
-      // State 2
+      // State 2a
+      registerRunAndCheckIfRunMustContinue: {
+        invoke: {
+          id: 'registerRunAndCheckIfRunMustContinue',
+          src: 'registerRunAndCheckIfRunMustContinue',
+          input: ({context}) => ({
+            ...context,
+            queryFile: context.checkIfRunMustContinueQueryFile!,
+            timeout: context.checkIfRunMustContinueTimeout,
+          }),
+          onDone: {
+            target: 'evaluateIfRunMustContinue',
+            actions: assign({
+              continueRun: ({event}) => event.output,
+            }),
+          },
+        },
+      },
+      // State 2b
+      evaluateIfRunMustContinue: {
+        always: [
+          {
+            target: 'initUpdateOfLocations',
+            guard: ({context}) => context.continueRun,
+          },
+          {
+            target: 'finalize',
+          },
+        ],
+      },
+      // State 3
+      registerRun: {
+        invoke: {
+          id: 'registerRun',
+          src: 'registerRun',
+          input: ({context}) => context,
+          onDone: 'initUpdateOfLocations',
+        },
+      },
+      // State 4
       initUpdateOfLocations: {
         initial: 'iterateLocations',
         states: {
-          // State 2a
+          // State 4a
           iterateLocations: {
             invoke: {
               id: 'iterateLocations',
               src: 'iterate',
               input: ({context}) => ({
                 ...context,
+                type: 'locations',
                 queryFile: context.locationsIterateQueryFile,
                 waitBetweenRequests: context.iterateWaitBetweenRequests,
                 timeoutPerRequest: context.iterateTimeoutPerRequest,
@@ -181,7 +251,7 @@ export async function run(input: Input) {
               onDone: 'removeObsoleteLocations',
             },
           },
-          // State 2b
+          // State 4b
           removeObsoleteLocations: {
             invoke: {
               id: 'removeObsoleteLocations',
@@ -197,11 +267,11 @@ export async function run(input: Input) {
           },
         },
       },
-      // State 3
+      // State 5
       updateLocations: {
         initial: 'dereferenceLocations',
         states: {
-          // State 3a
+          // State 5a
           dereferenceLocations: {
             invoke: {
               id: 'dereferenceLocations',
@@ -222,7 +292,7 @@ export async function run(input: Input) {
               onDone: 'checkLocationsQueue',
             },
           },
-          // State 3b
+          // State 5b
           checkLocationsQueue: {
             invoke: {
               id: 'checkLocationsQueue',
@@ -239,7 +309,7 @@ export async function run(input: Input) {
               },
             },
           },
-          // State 3c
+          // State 5c
           evaluateLocationsQueue: {
             always: [
               {
@@ -253,11 +323,11 @@ export async function run(input: Input) {
           },
         },
       },
-      // State 4
+      // State 6
       initUpdateOfCountries: {
         initial: 'fileIterate',
         states: {
-          // State 4a
+          // State 6a
           fileIterate: {
             invoke: {
               id: 'fileIterate',
@@ -272,7 +342,7 @@ export async function run(input: Input) {
               onDone: 'removeObsoleteCountries',
             },
           },
-          // State 4b
+          // State 6b
           removeObsoleteCountries: {
             invoke: {
               id: 'removeObsoleteCountries',
@@ -288,11 +358,11 @@ export async function run(input: Input) {
           },
         },
       },
-      // State 5
+      // State 7
       updateCountries: {
         initial: 'dereferenceCountries',
         states: {
-          // State 5a
+          // State 7a
           dereferenceCountries: {
             invoke: {
               id: 'dereferenceCountries',
@@ -313,7 +383,7 @@ export async function run(input: Input) {
               onDone: 'checkCountriesQueue',
             },
           },
-          // State 5b
+          // State 7b
           checkCountriesQueue: {
             invoke: {
               id: 'checkCountriesQueue',
@@ -330,7 +400,7 @@ export async function run(input: Input) {
               },
             },
           },
-          // State 5c
+          // State 7c
           evaluateCountriesQueue: {
             always: [
               {
@@ -344,7 +414,7 @@ export async function run(input: Input) {
               },
             ],
           },
-          // State 5d
+          // State 7d
           // This action fails if another process is already
           // uploading resources to the data platform
           upload: {
@@ -357,7 +427,7 @@ export async function run(input: Input) {
           },
         },
       },
-      // State 6
+      // State 8
       finalize: {
         invoke: {
           id: 'finalize',

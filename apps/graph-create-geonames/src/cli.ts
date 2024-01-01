@@ -11,6 +11,14 @@ cli
   .option('--data-file <string>', 'File with data')
   .option('--endpoint-url <string>', 'SPARQL endpoint URL')
   .option(
+    '--check-if-run-must-continue-query-file <string>',
+    'File with a SPARQL query'
+  )
+  .option(
+    '--check-if-run-must-continue-timeout [number]',
+    'Timeout, in milliseconds'
+  )
+  .option(
     '--locations-iterate-query-file <string>',
     'File with a SPARQL query for collecting locations'
   )

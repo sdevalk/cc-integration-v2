@@ -8,11 +8,11 @@ import {
 } from '@colonial-collections/datastore';
 import {
   checkQueue,
-  removeObsoleteResources,
   finalize,
   iterate,
   registerRun,
   registerRunAndCheckIfRunMustContinue,
+  removeObsoleteResources,
   upload,
 } from '@colonial-collections/xstate-actors';
 import type {pino} from 'pino';
@@ -57,7 +57,7 @@ export async function run(input: Input) {
   /*
     High-level workflow:
     If queue is empty: (start a new run)
-      If a 'must run' query file is set:
+      If a 'must run continue' query file is set:
         Register run
         Check if run must continue
         If run must continue:
