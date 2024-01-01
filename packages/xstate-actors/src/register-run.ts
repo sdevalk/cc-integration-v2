@@ -17,6 +17,8 @@ export const registerRun = fromPromise(
   async ({input}: {input: RegisterRunInput}) => {
     const opts = registerRunInputSchema.parse(input);
 
+    opts.logger.info('Registering run');
+
     opts.runs.save();
 
     return true; // 'Must continue run'
@@ -41,6 +43,8 @@ export const registerRunAndCheckIfRunMustContinue = fromPromise(
   async ({input}: {input: RegisterRunAndCheckIfRunMustContinueInput}) => {
     const opts = registerRunAndCheckIfRunMustContinueInputSchema.parse(input);
 
+    opts.logger.info('Registering run');
+
     const lastRun = await opts.runs.getLast();
 
     const query = await readFile(opts.queryFile, 'utf-8');
@@ -59,7 +63,7 @@ export const registerRunAndCheckIfRunMustContinue = fromPromise(
 
     opts.logger.info(
       {response},
-      `Must run continue? ${continueRun ? 'Yes' : 'No'}`
+      `Must continue run? ${continueRun ? 'Yes' : 'No'}`
     );
 
     return continueRun;

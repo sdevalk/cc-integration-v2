@@ -1,7 +1,3 @@
-import {
-  registerRun,
-  registerRunAndCheckIfRunMustContinue,
-} from './register-run.js';
 import {generate} from './generate.js';
 import {getLogger} from '@colonial-collections/common';
 import {
@@ -15,6 +11,8 @@ import {
   removeObsoleteResources,
   finalize,
   iterate,
+  registerRun,
+  registerRunAndCheckIfRunMustContinue,
   upload,
 } from '@colonial-collections/xstate-actors';
 import type {pino} from 'pino';
@@ -190,7 +188,13 @@ export async function run(input: Input) {
             invoke: {
               id: 'iterate',
               src: 'iterate',
-              input: ({context}) => context,
+              input: ({context}) => ({
+                ...context,
+                queryFile: context.iterateQueryFile,
+                waitBetweenRequests: context.iterateWaitBetweenRequests,
+                timeoutPerRequest: context.iterateTimeoutPerRequest,
+                numberOfIrisPerRequest: context.iterateNumberOfIrisPerRequest,
+              }),
               onDone: 'removeObsoleteResources',
             },
           },
@@ -214,7 +218,15 @@ export async function run(input: Input) {
             invoke: {
               id: 'generate',
               src: 'generate',
-              input: ({context}) => context,
+              input: ({context}) => ({
+                ...context,
+                queryFile: context.generateQueryFile,
+                waitBetweenRequests: context.generateWaitBetweenRequests,
+                timeoutPerRequest: context.generateTimeoutPerRequest,
+                numberOfConcurrentRequests:
+                  context.generateNumberOfConcurrentRequests,
+                batchSize: context.generateBatchSize,
+              }),
               onDone: 'checkQueue',
             },
           },

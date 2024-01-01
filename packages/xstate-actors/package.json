@@ -8,11 +8,12 @@
   "scripts": {
     "build": "tsup",
     "test": "vitest --coverage",
-    "test:once": "vitest --run --passWithNoTests"
+    "test:once": "vitest --run"
   },
   "dependencies": {
     "@colonial-collections/filestore": "*",
     "@colonial-collections/datastore": "*",
+    "@colonial-collections/sparql-change-checker": "*",
     "@colonial-collections/sparql-iterator": "*",
     "@colonial-collections/triplydb": "*",
     "fastq": "1.15.0",

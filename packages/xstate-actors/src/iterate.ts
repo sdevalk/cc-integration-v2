@@ -12,10 +12,10 @@ const inputSchema = z.object({
   queue: z.instanceof(Queue),
   type: z.string().optional(),
   endpointUrl: z.string(),
-  iterateQueryFile: z.string(),
-  iterateWaitBetweenRequests: z.number().optional(),
-  iterateTimeoutPerRequest: z.number().optional(),
-  iterateNumberOfIrisPerRequest: z.number().optional(),
+  queryFile: z.string(),
+  waitBetweenRequests: z.number().optional(),
+  timeoutPerRequest: z.number().optional(),
+  numberOfIrisPerRequest: z.number().optional(),
 });
 
 export type IterateInput = z.input<typeof inputSchema>;
@@ -29,13 +29,13 @@ export const iterate = fromPromise(async ({input}: {input: IterateInput}) => {
 
   const save = async (iri: string) => opts.queue.push({iri, type: opts.type});
   const iteratorQueue = fastq.promise(save, 1); // Concurrency
-  const query = await readFile(opts.iterateQueryFile, 'utf-8');
+  const query = await readFile(opts.queryFile, 'utf-8');
 
   const iterator = new SparqlIterator({
     endpointUrl: opts.endpointUrl,
-    waitBetweenRequests: opts.iterateWaitBetweenRequests,
-    timeoutPerRequest: opts.iterateTimeoutPerRequest,
-    numberOfIrisPerRequest: opts.iterateNumberOfIrisPerRequest,
+    waitBetweenRequests: opts.waitBetweenRequests,
+    timeoutPerRequest: opts.timeoutPerRequest,
+    numberOfIrisPerRequest: opts.numberOfIrisPerRequest,
     query,
     queue: iteratorQueue,
   });

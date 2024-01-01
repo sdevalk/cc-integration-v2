@@ -12,11 +12,11 @@ const inputSchema = z.object({
   queue: z.instanceof(Queue),
   resourceDir: z.string(),
   endpointUrl: z.string(),
-  generateQueryFile: z.string(),
-  generateWaitBetweenRequests: z.number().optional(),
-  generateTimeoutPerRequest: z.number().optional(),
-  generateNumberOfConcurrentRequests: z.number().optional(),
-  generateBatchSize: z.number().optional(),
+  queryFile: z.string(),
+  waitBetweenRequests: z.number().optional(),
+  timeoutPerRequest: z.number().optional(),
+  numberOfConcurrentRequests: z.number().optional(),
+  batchSize: z.number().optional(),
 });
 
 export type Input = z.input<typeof inputSchema>;
@@ -28,12 +28,12 @@ export const generate = fromPromise(async ({input}: {input: Input}) => {
     `Generating resources from SPARQL endpoint "${opts.endpointUrl}"`
   );
 
-  const query = await readFile(opts.generateQueryFile, 'utf-8');
+  const query = await readFile(opts.queryFile, 'utf-8');
   const storer = new SparqlStorer({
     logger: opts.logger,
     resourceDir: opts.resourceDir,
     endpointUrl: opts.endpointUrl,
-    timeoutPerRequest: opts.generateTimeoutPerRequest,
+    timeoutPerRequest: opts.timeoutPerRequest,
     query,
   });
 
@@ -47,9 +47,9 @@ export const generate = fromPromise(async ({input}: {input: Input}) => {
 
   await storer.run({
     queue: opts.queue,
-    waitBetweenRequests: opts.generateWaitBetweenRequests,
-    numberOfConcurrentRequests: opts.generateNumberOfConcurrentRequests,
-    batchSize: opts.generateBatchSize,
+    waitBetweenRequests: opts.waitBetweenRequests,
+    numberOfConcurrentRequests: opts.numberOfConcurrentRequests,
+    batchSize: opts.batchSize,
   });
 
   const queueSize = await opts.queue.size();
