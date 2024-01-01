@@ -17,7 +17,7 @@ export const registerRun = fromPromise(
   async ({input}: {input: RegisterRunInput}) => {
     const opts = registerRunInputSchema.parse(input);
 
-    opts.runs.save({}); // FIXME: allow for empty
+    opts.runs.save();
 
     return true;
   }
@@ -41,7 +41,7 @@ export const registerRunByCheckingIfRunMustRun = fromPromise(
   async ({input}: {input: RegisterRunByCheckingIfRunMustRunInput}) => {
     const opts = registerRunByCheckingIfRunMustRunInputSchema.parse(input);
 
-    const lastRun = await opts.runs.getLastRun();
+    const lastRun = await opts.runs.getLast();
 
     const query = await readFile(opts.mustRunQueryFile, 'utf-8');
     const checker = new SparqlChangeChecker({

@@ -34,7 +34,7 @@ const inputSchema = z.object({
   generateQueryFile: z.string(),
   generateWaitBetweenRequests: z.number().default(100),
   generateTimeoutPerRequest: z.number().optional(),
-  generateNumberOfConcurrentRequests: z.number().default(20), // Single-threaded max performance
+  generateNumberOfConcurrentRequests: z.number().default(20), // ~ single-threaded max performance
   generateBatchSize: z.number().default(50000),
   triplydbInstanceUrl: z.string(),
   triplydbApiToken: z.string(),

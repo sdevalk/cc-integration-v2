@@ -18,23 +18,21 @@ export class Runs {
     this.db = opts.connection.db;
   }
 
-  async save(item: NewRunItem) {
+  async removeAll() {
+    await this.db.deleteFrom('runs').execute();
+  }
+
+  async save(item?: NewRunItem) {
+    await this.removeAll(); // Remove previous runs, if any
+
     return this.db
       .insertInto('runs')
-      .values(item)
+      .values(item || {identifier: ''})
       .returningAll()
       .executeTakeFirstOrThrow();
   }
 
-  async remove(id: number) {
-    await this.db.deleteFrom('runs').where('id', '=', id).execute();
-  }
-
-  async getLastRun() {
-    return this.db
-      .selectFrom('runs')
-      .orderBy('created_at asc')
-      .selectAll()
-      .executeTakeFirst();
+  async getLast() {
+    return this.db.selectFrom('runs').selectAll().executeTakeFirst();
   }
 }

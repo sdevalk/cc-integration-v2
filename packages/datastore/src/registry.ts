@@ -64,7 +64,7 @@ export class Registry {
 
     const obsoleteItems = await selectQuery.execute();
 
-    // Beware: if the queue is empty all existing resources will be removed
+    // Beware: if the queue is empty all items will be removed
     let deleteQuery = this.db
       .deleteFrom('registry')
       .where('iri', 'not in', inQueueQuery);

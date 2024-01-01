@@ -13,8 +13,8 @@ export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;
 
 export const runOptionsSchema = z.object({
   query: z.string(),
-  // E.g. the ID of the last revision or the date of the last modification
-  // Not set if there is no current identifier
+  // E.g. the ID of the last revision or the date of the last modification.
+  // Not set if e.g. the check hasn't been done before
   currentIdentifier: z.string().optional(),
 });
 
