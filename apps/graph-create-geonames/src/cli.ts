@@ -9,7 +9,7 @@ cli
   .command('create', 'Create or update a graph by dereferencing GeoNames IRIs')
   .option('--resource-dir <string>', 'Directory for storing RDF resources')
   .option('--data-file <string>', 'File with data')
-  .option('--endpoint-url <string>', 'SPARQL endpoint URL')
+  .option('--check-endpoint-url <string>', 'SPARQL endpoint URL')
   .option(
     '--check-if-run-must-continue-query-file <string>',
     'File with a SPARQL query'
@@ -18,12 +18,13 @@ cli
     '--check-if-run-must-continue-timeout [number]',
     'Timeout, in milliseconds'
   )
+  .option('--iterate-endpoint-url <string>', 'SPARQL endpoint URL')
   .option(
-    '--locations-iterate-query-file <string>',
+    '--iterate-locations-query-file <string>',
     'File with a SPARQL query for collecting locations'
   )
   .option(
-    '--countries-iterate-query-file <string>',
+    '--iterate-countries-query-file <string>',
     'File with a SPARQL query for collecting countries'
   )
   .option(

@@ -9,7 +9,7 @@ cli
   .command('create', 'Create or update a graph by querying a SPARQL endpoint')
   .option('--resource-dir <string>', 'Directory for storing RDF resources')
   .option('--data-file <string>', 'File with data')
-  .option('--endpoint-url <string>', 'SPARQL endpoint URL')
+  .option('--check-endpoint-url <string>', 'SPARQL endpoint URL')
   .option(
     '--check-if-run-must-continue-query-file <string>',
     'File with a SPARQL query'
@@ -22,6 +22,7 @@ cli
     '--iri-to-check-for-changes [string]',
     'IRI of a resource to check for changes'
   )
+  .option('--iterate-endpoint-url <string>', 'SPARQL endpoint URL')
   .option('--iterate-query-file <string>', 'File with a SPARQL query')
   .option(
     '--iterate-wait-between-requests [number]',
@@ -35,6 +36,7 @@ cli
     '--iterate-number-of-iris-per-request [number]',
     'Number of IRIs to collect per request'
   )
+  .option('--generate-endpoint-url <string>', 'SPARQL endpoint URL')
   .option('--generate-query-file <string>', 'File with a SPARQL query')
   .option(
     '--generate-wait-between-requests [number]',

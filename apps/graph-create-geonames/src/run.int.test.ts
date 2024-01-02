@@ -38,9 +38,9 @@ describe('run', () => {
     await run({
       resourceDir,
       dataFile,
-      endpointUrl: 'https://dbpedia.org/sparql',
-      locationsIterateQueryFile: './fixtures/queries/iterate-locations.rq',
-      countriesIterateQueryFile: '', // Unused by the test
+      iterateEndpointUrl: 'https://dbpedia.org/sparql',
+      iterateLocationsQueryFile: './fixtures/queries/iterate-locations.rq',
+      iterateCountriesQueryFile: '', // Unused by the test
       triplydbInstanceUrl,
       triplydbApiToken,
       triplydbAccount,
@@ -94,9 +94,9 @@ describe('run', () => {
     await run({
       resourceDir,
       dataFile,
-      endpointUrl: 'https://dbpedia.org/sparql',
-      locationsIterateQueryFile: './fixtures/queries/iterate-locations.rq',
-      countriesIterateQueryFile: '', // Unused by the test
+      iterateEndpointUrl: 'https://dbpedia.org/sparql',
+      iterateLocationsQueryFile: './fixtures/queries/iterate-locations.rq',
+      iterateCountriesQueryFile: '', // Unused by the test
       triplydbInstanceUrl,
       triplydbApiToken,
       triplydbAccount,
@@ -122,11 +122,12 @@ describe('run', () => {
     await run({
       resourceDir,
       dataFile,
-      endpointUrl: 'https://dbpedia.org/sparql',
+      checkEndpointUrl: 'https://dbpedia.org/sparql',
       checkIfRunMustContinueQueryFile:
         './fixtures/queries/check-must-continue-run-dbpedia.rq',
-      locationsIterateQueryFile: './fixtures/queries/iterate-locations.rq',
-      countriesIterateQueryFile: '', // Unused by the test
+      iterateEndpointUrl: 'https://dbpedia.org/sparql',
+      iterateLocationsQueryFile: './fixtures/queries/iterate-locations.rq',
+      iterateCountriesQueryFile: '', // Unused by the test
       triplydbInstanceUrl,
       triplydbApiToken,
       triplydbAccount,
@@ -141,11 +142,12 @@ describe('run', () => {
     await run({
       resourceDir,
       dataFile,
-      endpointUrl: 'https://dbpedia.org/sparql',
+      checkEndpointUrl: 'https://dbpedia.org/sparql',
       checkIfRunMustContinueQueryFile:
         './fixtures/queries/check-must-continue-run-dbpedia.rq',
-      locationsIterateQueryFile: './fixtures/queries/iterate-locations.rq',
-      countriesIterateQueryFile: '', // Unused by the test
+      iterateEndpointUrl: 'https://dbpedia.org/sparql',
+      iterateLocationsQueryFile: './fixtures/queries/iterate-locations.rq',
+      iterateCountriesQueryFile: '', // Unused by the test
       triplydbInstanceUrl,
       triplydbApiToken,
       triplydbAccount,
@@ -200,9 +202,9 @@ describe('run', () => {
     await run({
       resourceDir,
       dataFile,
-      endpointUrl: 'https://dbpedia.org/sparql',
-      locationsIterateQueryFile: '', // Unused by the test
-      countriesIterateQueryFile: './fixtures/queries/iterate-countries.rq',
+      iterateEndpointUrl: 'https://dbpedia.org/sparql',
+      iterateLocationsQueryFile: '', // Unused by the test
+      iterateCountriesQueryFile: './fixtures/queries/iterate-countries.rq',
       dereferenceBatchSize: 1,
       triplydbInstanceUrl,
       triplydbApiToken,
@@ -230,9 +232,9 @@ describe('run', () => {
     await run({
       resourceDir,
       dataFile,
-      endpointUrl: 'https://dbpedia.org/sparql',
-      locationsIterateQueryFile: '', // Unused by the test
-      countriesIterateQueryFile: './fixtures/queries/iterate-countries.rq',
+      iterateEndpointUrl: 'https://dbpedia.org/sparql',
+      iterateLocationsQueryFile: '', // Unused by the test
+      iterateCountriesQueryFile: './fixtures/queries/iterate-countries.rq',
       dereferenceBatchSize: 1,
       triplydbInstanceUrl,
       triplydbApiToken,
@@ -269,9 +271,9 @@ describe('run', () => {
     await run({
       resourceDir,
       dataFile,
-      endpointUrl: 'https://dbpedia.org/sparql',
-      locationsIterateQueryFile: '', // Unused by the test
-      countriesIterateQueryFile: './fixtures/queries/iterate-countries.rq',
+      iterateEndpointUrl: 'https://dbpedia.org/sparql',
+      iterateLocationsQueryFile: '', // Unused by the test
+      iterateCountriesQueryFile: './fixtures/queries/iterate-countries.rq',
       triplydbInstanceUrl,
       triplydbApiToken,
       triplydbAccount,
@@ -301,9 +303,9 @@ describe('run', () => {
     await run({
       resourceDir,
       dataFile,
-      endpointUrl: 'https://dbpedia.org/sparql',
-      locationsIterateQueryFile: '', // Unused by the test
-      countriesIterateQueryFile: './fixtures/queries/iterate-countries.rq',
+      iterateEndpointUrl: 'https://dbpedia.org/sparql',
+      iterateLocationsQueryFile: '', // Unused by the test
+      iterateCountriesQueryFile: './fixtures/queries/iterate-countries.rq',
       dereferenceBatchSize: 1,
       triplydbInstanceUrl,
       triplydbApiToken,
@@ -329,9 +331,9 @@ describe('run', () => {
     await run({
       resourceDir,
       dataFile,
-      endpointUrl: 'https://dbpedia.org/sparql',
-      locationsIterateQueryFile: '', // Unused by the test
-      countriesIterateQueryFile: './fixtures/queries/iterate-countries.rq',
+      iterateEndpointUrl: 'https://dbpedia.org/sparql',
+      iterateLocationsQueryFile: '', // Unused by the test
+      iterateCountriesQueryFile: './fixtures/queries/iterate-countries.rq',
       dereferenceBatchSize: 1,
       triplydbInstanceUrl,
       triplydbApiToken,

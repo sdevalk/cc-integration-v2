@@ -36,8 +36,9 @@ describe('run', () => {
     await run({
       resourceDir,
       dataFile,
-      endpointUrl: 'https://dbpedia.org/sparql',
+      iterateEndpointUrl: 'https://dbpedia.org/sparql',
       iterateQueryFile: './fixtures/queries/iterate-john-mccallum.rq',
+      generateEndpointUrl: '', // Unused by the test
       generateQueryFile: '', // Unused by the test
       triplydbInstanceUrl,
       triplydbApiToken,
@@ -77,8 +78,9 @@ describe('run', () => {
     await run({
       resourceDir,
       dataFile,
-      endpointUrl: 'https://dbpedia.org/sparql',
+      iterateEndpointUrl: 'https://dbpedia.org/sparql',
       iterateQueryFile: './fixtures/queries/iterate-jack-dowding.rq',
+      generateEndpointUrl: '', // Unused by the test
       generateQueryFile: '', // Unused by the test
       triplydbInstanceUrl,
       triplydbApiToken,
@@ -114,10 +116,12 @@ describe('run', () => {
     await run({
       resourceDir,
       dataFile,
-      endpointUrl: 'https://dbpedia.org/sparql',
+      checkEndpointUrl: 'https://dbpedia.org/sparql',
       checkIfRunMustContinueQueryFile:
         './fixtures/queries/check-must-continue-run-dbpedia.rq',
+      iterateEndpointUrl: '', // Unused by the test
       iterateQueryFile: '', // Unused by the test
+      generateEndpointUrl: '', // Unused by the test
       generateQueryFile: '', // Unused by the test
       triplydbInstanceUrl,
       triplydbApiToken,
@@ -133,10 +137,12 @@ describe('run', () => {
     await run({
       resourceDir,
       dataFile,
-      endpointUrl: 'https://dbpedia.org/sparql',
+      checkEndpointUrl: 'https://dbpedia.org/sparql',
       checkIfRunMustContinueQueryFile:
         './fixtures/queries/check-must-continue-run-dbpedia.rq',
+      iterateEndpointUrl: 'https://dbpedia.org/sparql',
       iterateQueryFile: './fixtures/queries/iterate-john-mccallum.rq',
+      generateEndpointUrl: '', // Unused by the test
       generateQueryFile: '', // Unused by the test
       triplydbInstanceUrl,
       triplydbApiToken,
@@ -176,8 +182,9 @@ describe('run', () => {
     await run({
       resourceDir,
       dataFile,
-      endpointUrl: 'https://vocab.getty.edu/sparql',
+      iterateEndpointUrl: '', // Unused by the test
       iterateQueryFile: '', // Unused by the test
+      generateEndpointUrl: 'https://vocab.getty.edu/sparql',
       generateQueryFile: './fixtures/queries/generate-aat.rq',
       generateBatchSize: 1,
       triplydbInstanceUrl,
@@ -199,8 +206,9 @@ describe('run', () => {
     await run({
       resourceDir,
       dataFile,
-      endpointUrl: 'https://vocab.getty.edu/sparql',
+      iterateEndpointUrl: '', // Unused by the test
       iterateQueryFile: '', // Unused by the test
+      generateEndpointUrl: 'https://vocab.getty.edu/sparql',
       generateQueryFile: './fixtures/queries/generate-aat.rq',
       triplydbInstanceUrl,
       triplydbApiToken,

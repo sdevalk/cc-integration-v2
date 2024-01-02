@@ -22,13 +22,15 @@ import {z} from 'zod';
 const inputSchema = z.object({
   resourceDir: z.string(),
   dataFile: z.string(),
-  endpointUrl: z.string(),
+  checkEndpointUrl: z.string().optional(),
   checkIfRunMustContinueQueryFile: z.string().optional(),
   checkIfRunMustContinueTimeout: z.number().optional(),
+  iterateEndpointUrl: z.string(),
   iterateQueryFile: z.string(),
   iterateWaitBetweenRequests: z.number().default(500),
   iterateTimeoutPerRequest: z.number().optional(),
   iterateNumberOfIrisPerRequest: z.number().default(10000),
+  generateEndpointUrl: z.string(),
   generateQueryFile: z.string(),
   generateWaitBetweenRequests: z.number().default(100),
   generateTimeoutPerRequest: z.number().optional(),
@@ -149,6 +151,7 @@ export async function run(input: Input) {
           src: 'registerRunAndCheckIfRunMustContinue',
           input: ({context}) => ({
             ...context,
+            endpointUrl: context.checkEndpointUrl,
             queryFile: context.checkIfRunMustContinueQueryFile!,
             timeout: context.checkIfRunMustContinueTimeout,
           }),
@@ -192,6 +195,7 @@ export async function run(input: Input) {
               src: 'iterate',
               input: ({context}) => ({
                 ...context,
+                endpointUrl: context.iterateEndpointUrl,
                 queryFile: context.iterateQueryFile,
                 waitBetweenRequests: context.iterateWaitBetweenRequests,
                 timeoutPerRequest: context.iterateTimeoutPerRequest,
@@ -222,6 +226,7 @@ export async function run(input: Input) {
               src: 'generate',
               input: ({context}) => ({
                 ...context,
+                endpointUrl: context.generateEndpointUrl,
                 queryFile: context.generateQueryFile,
                 waitBetweenRequests: context.generateWaitBetweenRequests,
                 timeoutPerRequest: context.generateTimeoutPerRequest,
