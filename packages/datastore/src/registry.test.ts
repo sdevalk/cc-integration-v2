@@ -49,8 +49,8 @@ describe('save', async () => {
   });
 });
 
-describe('removeObsolete', async () => {
-  it('removes obsolete items', async () => {
+describe('removeIfNotInQueue', async () => {
+  it('removes items that are not in the queue', async () => {
     const registry = new Registry({connection});
 
     await registry.save({iri: 'https://example.org/1'});
@@ -60,13 +60,13 @@ describe('removeObsolete', async () => {
 
     await queue.push({iri: 'https://example.org/1'});
 
-    const obsoleteItems = await registry.removeObsolete();
+    const removedItems = await registry.removeIfNotInQueue();
 
-    expect(obsoleteItems.length).toBe(1);
-    expect(obsoleteItems[0].iri).toEqual('https://example.org/2');
+    expect(removedItems.length).toBe(1);
+    expect(removedItems[0].iri).toEqual('https://example.org/2');
   });
 
-  it('removes obsolete items belonging to a specific type', async () => {
+  it('removes items belonging to a specific type that are not in the queue', async () => {
     const registry = new Registry({connection});
 
     await registry.save({iri: 'https://example.org/1', type: 'type1'});
@@ -77,10 +77,10 @@ describe('removeObsolete', async () => {
 
     await queue.push({iri: 'https://example.org/1', type: 'type1'});
 
-    const obsoleteItems = await registry.removeObsolete({type: 'type1'});
+    const removedItems = await registry.removeIfNotInQueue({type: 'type1'});
 
-    expect(obsoleteItems.length).toBe(1);
-    expect(obsoleteItems[0].iri).toEqual('https://example.org/3');
+    expect(removedItems.length).toBe(1);
+    expect(removedItems[0].iri).toEqual('https://example.org/3');
   });
 
   it('removes all items if queue is empty', async () => {
@@ -89,8 +89,8 @@ describe('removeObsolete', async () => {
     await registry.save({iri: 'https://example.org/1'});
     await registry.save({iri: 'https://example.org/2'});
 
-    const obsoleteItems = await registry.removeObsolete();
+    const removedItems = await registry.removeIfNotInQueue();
 
-    expect(obsoleteItems.length).toBe(2);
+    expect(removedItems.length).toBe(2);
   });
 });

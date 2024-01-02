@@ -11,13 +11,15 @@ export type RegistryConstructorOptions = z.input<
   typeof constructorOptionsSchema
 >;
 
-const removeObsoleteOptionsSchema = z
+const removeIfNotInQueueOptionsSchema = z
   .object({
     type: z.string().optional(),
   })
   .default({});
 
-export type RemoveObsoleteOptions = z.input<typeof removeObsoleteOptionsSchema>;
+export type RemoveIfNotInQueueOptions = z.input<
+  typeof removeIfNotInQueueOptionsSchema
+>;
 
 export class Registry {
   private db: Kysely<Database>;
@@ -44,9 +46,8 @@ export class Registry {
       .executeTakeFirstOrThrow();
   }
 
-  // Remove all items from the registry that aren't in the queue
-  async removeObsolete(options?: RemoveObsoleteOptions) {
-    const opts = removeObsoleteOptionsSchema.parse(options);
+  async removeIfNotInQueue(options?: RemoveIfNotInQueueOptions) {
+    const opts = removeIfNotInQueueOptionsSchema.parse(options);
 
     let inQueueQuery = this.db.selectFrom('queue').select('iri');
     if (opts.type !== undefined) {
@@ -62,19 +63,21 @@ export class Registry {
       selectQuery = selectQuery.where('type', '=', opts.type);
     }
 
-    const obsoleteItems = await selectQuery.execute();
+    const removedItems = await selectQuery.execute();
 
-    // Beware: if the queue is empty all items will be removed
-    let deleteQuery = this.db
-      .deleteFrom('registry')
-      .where('iri', 'not in', inQueueQuery);
+    if (removedItems.length > 0) {
+      // Beware: if the queue is empty all items will be removed
+      let deleteQuery = this.db
+        .deleteFrom('registry')
+        .where('iri', 'not in', inQueueQuery);
 
-    if (opts.type !== undefined) {
-      deleteQuery = deleteQuery.where('type', '=', opts.type);
+      if (opts.type !== undefined) {
+        deleteQuery = deleteQuery.where('type', '=', opts.type);
+      }
+
+      await deleteQuery.execute();
     }
 
-    await deleteQuery.execute();
-
-    return obsoleteItems;
+    return removedItems;
   }
 }

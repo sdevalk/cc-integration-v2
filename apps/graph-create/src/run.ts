@@ -63,10 +63,12 @@ export async function run(input: Input) {
       Check if run must continue
       If run must continue:
         Collect IRIs of resources
+        Remove obsolete resources
       Finalize
     Else if queue is empty:
       Register run
       Collect IRIs of resources
+      Remove obsolete resources
       Finalize
     Else (= queue is not empty):
       Update resources by querying a SPARQL endpoint with their IRIs

@@ -72,15 +72,18 @@ export async function run(input: Input) {
       Check if run must continue
       If run must continue:
         Collect IRIs of locations
+        Remove obsolete locations
       Finalize
     Else if locations queue is empty and countries queue is empty: (start a new run)
       Register run
       Collect IRIs of locations
+      Remove obsolete locations
       Finalize
     Else if locations queue is not empty:
       Update locations by dereferencing IRIs
       If locations queue is empty:
         Collect IRIs of countries
+        Remove obsolete countries
       Finalize
     Else if countries queue is not empty:
       Update countries by dereferencing IRIs

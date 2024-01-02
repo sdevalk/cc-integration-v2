@@ -23,16 +23,16 @@ export const removeObsoleteResources = fromPromise(
     opts.logger.info(`Removing obsolete resources in "${opts.resourceDir}"`);
 
     const filestore = new Filestore({dir: opts.resourceDir});
-    const obsoleteItems = await opts.registry.removeObsolete({
+    const removedItems = await opts.registry.removeIfNotInQueue({
       type: opts.type,
     });
 
-    for (const item of obsoleteItems) {
+    for (const item of removedItems) {
       await filestore.deleteByIri(item.iri);
     }
 
     opts.logger.info(
-      `Removed ${obsoleteItems.length} obsolete resources in "${opts.resourceDir}"`
+      `Removed ${removedItems.length} obsolete resources in "${opts.resourceDir}"`
     );
   }
 );
