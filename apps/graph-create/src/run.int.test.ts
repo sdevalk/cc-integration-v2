@@ -38,7 +38,7 @@ describe('run', () => {
       dataFile,
       endpointUrl: 'https://dbpedia.org/sparql',
       iterateQueryFile: './fixtures/queries/iterate-john-mccallum.rq',
-      generateQueryFile: '', // Unused for the test
+      generateQueryFile: '', // Unused by the test
       triplydbInstanceUrl,
       triplydbApiToken,
       triplydbAccount,
@@ -79,7 +79,7 @@ describe('run', () => {
       dataFile,
       endpointUrl: 'https://dbpedia.org/sparql',
       iterateQueryFile: './fixtures/queries/iterate-jack-dowding.rq',
-      generateQueryFile: '', // Unused for the test
+      generateQueryFile: '', // Unused by the test
       triplydbInstanceUrl,
       triplydbApiToken,
       triplydbAccount,
@@ -117,8 +117,8 @@ describe('run', () => {
       endpointUrl: 'https://dbpedia.org/sparql',
       checkIfRunMustContinueQueryFile:
         './fixtures/queries/check-must-continue-run-dbpedia.rq',
-      iterateQueryFile: '', // Unused for the test
-      generateQueryFile: '', // Unused for the test
+      iterateQueryFile: '', // Unused by the test
+      generateQueryFile: '', // Unused by the test
       triplydbInstanceUrl,
       triplydbApiToken,
       triplydbAccount,
@@ -137,7 +137,7 @@ describe('run', () => {
       checkIfRunMustContinueQueryFile:
         './fixtures/queries/check-must-continue-run-dbpedia.rq',
       iterateQueryFile: './fixtures/queries/iterate-john-mccallum.rq',
-      generateQueryFile: '', // Unused for the test
+      generateQueryFile: '', // Unused by the test
       triplydbInstanceUrl,
       triplydbApiToken,
       triplydbAccount,
@@ -177,7 +177,7 @@ describe('run', () => {
       resourceDir,
       dataFile,
       endpointUrl: 'https://vocab.getty.edu/sparql',
-      iterateQueryFile: '', // Unused for the test
+      iterateQueryFile: '', // Unused by the test
       generateQueryFile: './fixtures/queries/generate-aat.rq',
       generateBatchSize: 1,
       triplydbInstanceUrl,
@@ -200,7 +200,7 @@ describe('run', () => {
       resourceDir,
       dataFile,
       endpointUrl: 'https://vocab.getty.edu/sparql',
-      iterateQueryFile: '', // Unused for the test
+      iterateQueryFile: '', // Unused by the test
       generateQueryFile: './fixtures/queries/generate-aat.rq',
       triplydbInstanceUrl,
       triplydbApiToken,
