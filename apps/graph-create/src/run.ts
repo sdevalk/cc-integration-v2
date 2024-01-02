@@ -56,19 +56,21 @@ export async function run(input: Input) {
 
   /*
     High-level workflow:
-    If queue is empty: (start a new run)
-      If a 'must run continue' query file is set:
-        Register run
-        Check if run must continue
-        If run must continue:
-          Collect IRIs of resources
-      Else:
-        Register run
+    If queue is empty and a 'must run continue' query file is set: (start a new run)
+      Register run
+      Check if run must continue
+      If run must continue:
         Collect IRIs of resources
-    If queue is not empty:
-      Updates resources by querying a SPARQL endpoint with their IRIs
+      Finalize
+    Else if queue is empty:
+      Register run
+      Collect IRIs of resources
+      Finalize
+    Else (= queue is not empty):
+      Update resources by querying a SPARQL endpoint with their IRIs
       If queue is empty:
         Upload to data platform
+      Finalize
   */
 
   const workflow = setup({

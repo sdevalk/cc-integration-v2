@@ -66,23 +66,28 @@ export async function run(input: Input) {
 
   /*
     High-level workflow:
-    If locations queue is empty and countries queue is empty: (start a new run)
-      If a 'must run continue' query file is set:
-        Register run
-        Check if run must continue
-        If run must continue:
-          Collect IRIs of locations
-      Else:
-        Register run
+    If locations queue is empty and countries queue is empty and a 'must run continue' query file is set: (start a new run)
+      Register run
+      Check if run must continue
+      If run must continue:
         Collect IRIs of locations
-    If locations queue is not empty:
+      Finalize
+    Else if locations queue is empty and countries queue is empty: (start a new run)
+      Register run
+      Collect IRIs of locations
+      Finalize
+    Else if locations queue is not empty:
       Update locations by dereferencing IRIs
       If locations queue is empty:
         Collect IRIs of countries
-    If countries queue is not empty:
+      Finalize
+    Else if countries queue is not empty:
       Update countries by dereferencing IRIs
       If countries queue is empty:
         Upload to data platform
+      Finalize
+    Else:
+      Finalize
   */
 
   const workflow = setup({
